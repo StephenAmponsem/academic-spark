@@ -4,12 +4,12 @@ import { Brain, MessageCircle, Users, BookOpen, Lightbulb, Zap } from "lucide-re
 const features = [
   {
     icon: Brain,
-    title: "AI-Powered Assistance",
+    title: "AI-Powered Learning",
     description: "Get instant, intelligent answers to your academic questions with our advanced AI system."
   },
   {
     icon: MessageCircle,
-    title: "Real-time Q&A",
+    title: "Real-time Messaging",
     description: "Connect with instructors and peers for immediate help and collaborative problem-solving."
   },
   {
@@ -19,8 +19,8 @@ const features = [
   },
   {
     icon: BookOpen,
-    title: "Smart Content Library",
-    description: "Access curated academic resources tailored to your courses and learning goals."
+    title: "Browse Courses",
+    description: "Access courses from top providers worldwide with live updates and progress tracking."
   },
   {
     icon: Lightbulb,

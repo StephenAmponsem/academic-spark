@@ -30,7 +30,7 @@ const CTASection = () => {
                 variant="secondary" 
                 size="lg" 
                 className="text-lg px-8 py-6 bg-white text-primary hover:bg-white/90 hover:scale-105 transition-all duration-300"
-                onClick={() => navigate(user ? '/courses' : '/auth')}
+                onClick={() => navigate(user ? '/real-time-courses' : '/auth')}
               >
                 {user ? 'Browse Courses' : 'Get Started Free'}
               </Button>
@@ -38,7 +38,7 @@ const CTASection = () => {
                 variant="outline" 
                 size="lg" 
                 className="text-lg px-8 py-6 border-white/30 text-white hover:bg-white/10 hover:scale-105 transition-all duration-300"
-                onClick={() => navigate(user ? '/dashboard' : '/courses')}
+                onClick={() => navigate(user ? '/dashboard' : '/real-time-courses')}
               >
                 {user ? 'My Dashboard' : 'Explore Courses'}
               </Button>

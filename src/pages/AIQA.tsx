@@ -130,6 +130,7 @@ export default function AIQA() {
   const handleBackToMain = () => {
     setShowAIChat(false);
     setSelectedAIConversation(null);
+    window.location.href = '/';
   };
 
   const getAICapabilities = () => [

@@ -213,17 +213,17 @@ export function AIChatSystem({ conversationId, onBack }: AIChatSystemProps) {
         <div className="p-4 border-b border-gray-200 bg-gradient-to-r from-purple-50 to-blue-50">
           <div className="flex items-center justify-between">
             <div className="flex items-center">
-              {onBack && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={onBack}
-                  className="mr-3 border-gray-300 hover:bg-gray-50"
-                >
-                  <ArrowLeft className="h-4 w-4 mr-2" />
-                  Back to Dashboard
-                </Button>
-              )}
+                                {onBack && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={onBack}
+                      className="mr-3 border-gray-300 hover:bg-gray-50"
+                    >
+                      <ArrowLeft className="h-4 w-4 mr-2" />
+                      Back to Home
+                    </Button>
+                  )}
               <Avatar className="h-8 w-8 mr-3">
                 <AvatarFallback className="bg-gradient-to-br from-purple-500 to-blue-600">
                   <Bot className="h-4 w-4 text-white" />

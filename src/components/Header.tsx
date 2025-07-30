@@ -24,31 +24,28 @@ const Header = () => {
           <span className="text-xl font-bold text-foreground group-hover:text-primary transition-colors duration-300">EDUConnect</span>
         </div>
         
-        <nav className="hidden md:flex items-center space-x-6">
-          <button onClick={() => navigate('/courses')} className="text-muted-foreground hover:text-primary transition-all duration-300 relative group">
-            Courses
-            <div className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary group-hover:w-full transition-all duration-300"></div>
-          </button>
-          {user && (
-            <>
-              <button onClick={() => navigate('/dashboard')} className="text-muted-foreground hover:text-primary transition-all duration-300 relative group">
-                Dashboard
-                <div className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary group-hover:w-full transition-all duration-300"></div>
-              </button>
-                        <button onClick={() => navigate('/messaging')} className="text-muted-foreground hover:text-primary transition-all duration-300 relative group">
-            Messages
-            <div className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary group-hover:w-full transition-all duration-300"></div>
-          </button>
-          <button onClick={() => navigate('/ai-qa')} className="text-muted-foreground hover:text-primary transition-all duration-300 relative group">
-            AI Q&A
-            <div className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary group-hover:w-full transition-all duration-300"></div>
-          </button>
-              <button onClick={() => navigate('/qa')} className="text-muted-foreground hover:text-primary transition-all duration-300 relative group">
-                Q&A Chat
-                <div className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary group-hover:w-full transition-all duration-300"></div>
-              </button>
-            </>
-          )}
+                 <nav className="hidden md:flex items-center space-x-6">
+           <button onClick={() => navigate('/real-time-courses')} className="text-muted-foreground hover:text-primary transition-all duration-300 relative group">
+             Courses
+             <div className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary group-hover:w-full transition-all duration-300"></div>
+           </button>
+                       {user && (
+              <>
+                <button onClick={() => navigate('/dashboard')} className="text-muted-foreground hover:text-primary transition-all duration-300 relative group">
+                  Dashboard
+                  <div className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary group-hover:w-full transition-all duration-300"></div>
+                </button>
+                <button onClick={() => navigate('/my-learning')} className="text-muted-foreground hover:text-primary transition-all duration-300 relative group">
+                  My Learning
+                  <div className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary group-hover:w-full transition-all duration-300"></div>
+                </button>
+                        
+                    <button onClick={() => navigate('/ai-qa')} className="text-muted-foreground hover:text-primary transition-all duration-300 relative group">
+              AI Q&A
+              <div className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary group-hover:w-full transition-all duration-300"></div>
+            </button>
+             </>
+           )}
           <a href="#features" className="text-muted-foreground hover:text-primary transition-all duration-300 relative group">
             About
             <div className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary group-hover:w-full transition-all duration-300"></div>

@@ -1,5 +1,5 @@
 import { useAuth } from "@/hooks/useAuth";
-import { useEnrollments, useMyCourses } from "@/hooks/useCourses";
+import { useEnrolledCourses } from "@/hooks/useEnrolledCourses";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -28,15 +28,16 @@ import {
   Lightbulb,
   Zap,
   Globe,
-  Heart
+  Heart,
+  Brain,
+  MessageSquare
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 const Dashboard = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const { data: enrollments, isLoading: enrollmentsLoading } = useEnrollments();
-  const { data: myCourses, isLoading: myCoursesLoading } = useMyCourses();
+  const { data: enrolledCourses, isLoading: enrolledCoursesLoading } = useEnrolledCourses();
 
   const getDifficultyColor = (level: string | null) => {
     switch (level?.toLowerCase()) {
@@ -139,7 +140,7 @@ const Dashboard = () => {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-blue-100 text-sm font-medium">Enrolled Courses</p>
-                  <p className="text-3xl font-bold">{enrollments?.length || 0}</p>
+                  <p className="text-3xl font-bold">{enrolledCourses?.length || 0}</p>
                 </div>
                 <BookOpen className="h-8 w-8 text-blue-200" />
               </div>
@@ -150,10 +151,10 @@ const Dashboard = () => {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-purple-100 text-sm font-medium">My Courses</p>
-                  <p className="text-3xl font-bold">{myCourses?.length || 0}</p>
+                  <p className="text-purple-100 text-sm font-medium">AI Sessions</p>
+                  <p className="text-3xl font-bold">∞</p>
                 </div>
-                <Users className="h-8 w-8 text-purple-200" />
+                <Brain className="h-8 w-8 text-purple-200" />
               </div>
             </CardContent>
           </Card>
@@ -162,10 +163,10 @@ const Dashboard = () => {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-emerald-100 text-sm font-medium">Study Hours</p>
-                  <p className="text-3xl font-bold">24</p>
+                  <p className="text-emerald-100 text-sm font-medium">Real-time Learning</p>
+                  <p className="text-3xl font-bold">Live</p>
                 </div>
-                <Clock className="h-8 w-8 text-emerald-200" />
+                <Globe className="h-8 w-8 text-emerald-200" />
               </div>
             </CardContent>
           </Card>
@@ -174,10 +175,10 @@ const Dashboard = () => {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-amber-100 text-sm font-medium">Achievements</p>
-                  <p className="text-3xl font-bold">8</p>
+                  <p className="text-amber-100 text-sm font-medium">Response Time</p>
+                  <p className="text-3xl font-bold">&lt;2s</p>
                 </div>
-                <Award className="h-8 w-8 text-amber-200" />
+                <Zap className="h-8 w-8 text-amber-200" />
               </div>
             </CardContent>
           </Card>
@@ -193,9 +194,9 @@ const Dashboard = () => {
                   <BookOpen className="h-4 w-4" />
                   My Learning
                 </TabsTrigger>
-                <TabsTrigger value="teaching" className="flex items-center gap-2">
-                  <Users className="h-4 w-4" />
-                  My Courses
+                <TabsTrigger value="ai" className="flex items-center gap-2">
+                  <Brain className="h-4 w-4" />
+                  AI Assistant
                 </TabsTrigger>
               </TabsList>
               
@@ -205,13 +206,13 @@ const Dashboard = () => {
                     <h2 className="text-2xl font-bold text-foreground">Enrolled Courses</h2>
                     <p className="text-muted-foreground">Continue where you left off</p>
                   </div>
-                  <Button onClick={() => navigate('/courses')} className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-lg">
+                  <Button onClick={() => navigate('/my-learning')} className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-lg">
                     <Plus className="h-4 w-4 mr-2" />
-                    Browse Courses
+                    My Learning
                   </Button>
                 </div>
 
-                {enrollmentsLoading ? (
+                {enrolledCoursesLoading ? (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     {[...Array(4)].map((_, i) => (
                       <Card key={i} className="overflow-hidden">
@@ -223,7 +224,7 @@ const Dashboard = () => {
                       </Card>
                     ))}
                   </div>
-                ) : enrollments?.length === 0 ? (
+                ) : enrolledCourses?.length === 0 ? (
                   <Card className="text-center py-12 bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20">
                     <div className="mb-6">
                       <div className="relative inline-block">
@@ -237,14 +238,14 @@ const Dashboard = () => {
                     <p className="text-muted-foreground mb-6 max-w-md mx-auto">
                       Discover amazing courses and begin your educational adventure today!
                     </p>
-                    <Button onClick={() => navigate('/courses')} className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-lg">
+                    <Button onClick={() => navigate('/real-time-courses')} className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-lg">
                       <Sparkles className="h-4 w-4 mr-2" />
-                      Explore Courses
+                      Browse Courses
                     </Button>
                   </Card>
                 ) : (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {enrollments?.map((enrollment) => (
+                    {enrolledCourses?.map((enrollment) => (
                       <Card key={enrollment.id} className="group overflow-hidden hover:shadow-2xl transition-all duration-300 border-0 shadow-lg hover:scale-105">
                         <div className="relative">
                           {enrollment.course?.thumbnail_url ? (
@@ -318,105 +319,69 @@ const Dashboard = () => {
                 )}
               </TabsContent>
 
-              <TabsContent value="teaching" className="space-y-6">
+              <TabsContent value="ai" className="space-y-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <h2 className="text-2xl font-bold text-foreground">My Courses</h2>
-                    <p className="text-muted-foreground">Manage your created courses</p>
+                    <h2 className="text-2xl font-bold text-foreground">AI Learning Assistant</h2>
+                    <p className="text-muted-foreground">Get instant help with your studies</p>
                   </div>
-                  <Button onClick={() => navigate('/create-course')} className="bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700 text-white shadow-lg">
-                    <Plus className="h-4 w-4 mr-2" />
-                    Create Course
+                  <Button onClick={() => navigate('/ai-qa')} className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white shadow-lg">
+                    <Brain className="h-4 w-4 mr-2" />
+                    Start AI Chat
                   </Button>
                 </div>
 
-                {myCoursesLoading ? (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {[...Array(4)].map((_, i) => (
-                      <Card key={i} className="overflow-hidden">
-                        <Skeleton className="h-48 w-full" />
-                        <CardHeader>
-                          <Skeleton className="h-6 w-3/4" />
-                          <Skeleton className="h-4 w-full" />
-                        </CardHeader>
-                      </Card>
-                    ))}
-                  </div>
-                ) : myCourses?.length === 0 ? (
-                  <Card className="text-center py-12 bg-gradient-to-br from-emerald-50 to-green-50 dark:from-emerald-900/20 dark:to-green-900/20">
-                    <div className="mb-6">
-                      <div className="relative inline-block">
-                        <div className="absolute inset-0 bg-gradient-to-r from-emerald-600 to-green-600 rounded-full blur-xl opacity-20"></div>
-                        <div className="relative bg-white dark:bg-gray-800 rounded-full p-4 shadow-lg">
-                          <Users className="h-12 w-12 text-emerald-600 dark:text-emerald-400" />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <Card className="bg-gradient-to-br from-purple-50 to-blue-50 border-purple-200">
+                    <CardContent className="p-6">
+                      <div className="flex items-center mb-4">
+                        <div className="p-3 bg-purple-100 rounded-lg mr-4">
+                          <Brain className="h-6 w-6 text-purple-600" />
+                        </div>
+                        <div>
+                          <h3 className="text-lg font-semibold text-gray-900">24/7 AI Support</h3>
+                          <p className="text-sm text-gray-600">Get help anytime, anywhere</p>
                         </div>
                       </div>
-                    </div>
-                    <h3 className="text-2xl font-bold text-foreground mb-2">Share Your Knowledge</h3>
-                    <p className="text-muted-foreground mb-6 max-w-md mx-auto">
-                      Create your first course and start inspiring others with your expertise!
-                    </p>
-                    <Button onClick={() => navigate('/create-course')} className="bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700 text-white shadow-lg">
-                      <Sparkles className="h-4 w-4 mr-2" />
-                      Create Course
-                    </Button>
+                      <p className="text-gray-700 mb-4">
+                        Our AI assistant can help you with concept explanations, problem solving, 
+                        study guidance, and practice questions.
+                      </p>
+                      <Button 
+                        onClick={() => navigate('/ai-qa')}
+                        className="w-full bg-purple-600 hover:bg-purple-700"
+                      >
+                        <Sparkles className="h-4 w-4 mr-2" />
+                        Ask AI Assistant
+                      </Button>
+                    </CardContent>
                   </Card>
-                ) : (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {myCourses?.map((course) => (
-                      <Card key={course.id} className="group overflow-hidden hover:shadow-2xl transition-all duration-300 border-0 shadow-lg hover:scale-105">
-                        <div className="relative">
-                          {course.thumbnail_url ? (
-                            <img
-                              src={course.thumbnail_url}
-                              alt={course.title}
-                              className="w-full h-48 object-cover group-hover:scale-110 transition-transform duration-300"
-                            />
-                          ) : (
-                            <div className="w-full h-48 bg-gradient-to-br from-emerald-500 to-green-600 flex items-center justify-center">
-                              <BookOpen className="h-16 w-16 text-white" />
-                            </div>
-                          )}
-                          <div className="absolute top-4 left-4">
-                            <Badge variant={course.is_published ? "default" : "secondary"} className="border">
-                              {course.is_published ? 'Published' : 'Draft'}
-                            </Badge>
-                          </div>
-                          <div className="absolute top-4 right-4">
-                            <div className="w-8 h-8 bg-white/90 dark:bg-gray-800/90 rounded-full flex items-center justify-center shadow-lg">
-                              <TrendingUp className="h-4 w-4 text-emerald-500" />
-                            </div>
-                          </div>
+
+                  <Card className="bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-200">
+                    <CardContent className="p-6">
+                      <div className="flex items-center mb-4">
+                        <div className="p-3 bg-blue-100 rounded-lg mr-4">
+                          <Zap className="h-6 w-6 text-blue-600" />
                         </div>
-
-                        <CardHeader className="pb-3">
-                          <CardTitle className="text-xl font-bold text-foreground line-clamp-2">
-                            {course.title}
-                          </CardTitle>
-                          <p className="text-muted-foreground line-clamp-2 text-sm">
-                            {course.description || 'No description available'}
-                          </p>
-                        </CardHeader>
-
-                        <CardContent className="space-y-4">
-                          <div className="flex items-center justify-between text-sm text-muted-foreground">
-                            <div className="flex items-center gap-1">
-                              <Clock className="h-4 w-4" />
-                              <span>{course.duration_hours || 0}h</span>
-                            </div>
-                            <div className="flex items-center gap-1">
-                              <span className="font-medium">${course.price || 0}</span>
-                            </div>
-                          </div>
-                          <Button className="w-full bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700 text-white shadow-lg">
-                            <Target className="h-4 w-4 mr-2" />
-                            Manage Course
-                          </Button>
-                        </CardContent>
-                      </Card>
-                    ))}
-                  </div>
-                )}
+                        <div>
+                          <h3 className="text-lg font-semibold text-gray-900">Instant Responses</h3>
+                          <p className="text-sm text-gray-600">Get answers in under 2 seconds</p>
+                        </div>
+                      </div>
+                      <p className="text-gray-700 mb-4">
+                        No waiting time! Our AI provides immediate, accurate responses to help 
+                        you learn faster and more effectively.
+                      </p>
+                      <Button 
+                        onClick={() => navigate('/ai-qa')}
+                        className="w-full bg-blue-600 hover:bg-blue-700"
+                      >
+                        <MessageSquare className="h-4 w-4 mr-2" />
+                        Quick Questions
+                      </Button>
+                    </CardContent>
+                  </Card>
+                </div>
               </TabsContent>
             </Tabs>
           </div>
@@ -433,26 +398,38 @@ const Dashboard = () => {
               </CardHeader>
               <CardContent className="space-y-3">
                 <Button 
-                  onClick={() => navigate('/qa')} 
+                  onClick={() => navigate('/ai-qa')} 
                   variant="outline"
                   className="w-full justify-start bg-white/50 dark:bg-gray-800/50 hover:bg-white dark:hover:bg-gray-800 transition-all duration-200"
                 >
-                  <MessageCircle className="h-4 w-4 mr-3 text-blue-600" />
+                  <Brain className="h-4 w-4 mr-3 text-purple-600" />
                   <div className="text-left">
-                    <div className="font-medium">Q&A Chat</div>
+                    <div className="font-medium">AI Assistant</div>
                     <div className="text-xs text-muted-foreground">Get instant help</div>
                   </div>
                 </Button>
                 
                 <Button 
-                  onClick={() => navigate('/collaboration')} 
+                  onClick={() => navigate('/real-time-courses')} 
                   variant="outline"
                   className="w-full justify-start bg-white/50 dark:bg-gray-800/50 hover:bg-white dark:hover:bg-gray-800 transition-all duration-200"
                 >
-                  <Users2 className="h-4 w-4 mr-3 text-purple-600" />
+                  <Globe className="h-4 w-4 mr-3 text-blue-600" />
                   <div className="text-left">
-                    <div className="font-medium">Collaborate</div>
-                    <div className="text-xs text-muted-foreground">Connect with peers</div>
+                    <div className="font-medium">Browse Courses</div>
+                    <div className="text-xs text-muted-foreground">Real-time courses</div>
+                  </div>
+                </Button>
+
+                <Button 
+                  onClick={() => navigate('/my-learning')} 
+                  variant="outline"
+                  className="w-full justify-start bg-white/50 dark:bg-gray-800/50 hover:bg-white dark:hover:bg-gray-800 transition-all duration-200"
+                >
+                  <BookOpen className="h-4 w-4 mr-3 text-green-600" />
+                  <div className="text-left">
+                    <div className="font-medium">My Learning</div>
+                    <div className="text-xs text-muted-foreground">Enrolled courses</div>
                   </div>
                 </Button>
               </CardContent>
