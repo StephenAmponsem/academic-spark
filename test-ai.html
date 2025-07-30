@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Test</title>
+</head>
+<body>
+    <h1>OpenAI API Test</h1>
+    <button onclick="testAPI()">Test OpenAI API</button>
+    <div id="result"></div>
+
+    <script>
+        async function testAPI() {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = 'Testing API...';
+            
+            try {
+                const response = await fetch('https://api.openai.com/v1/chat/completions', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + prompt('Enter your OpenAI API key:')
+                    },
+                    body: JSON.stringify({
+                        model: 'gpt-3.5-turbo',
+                        messages: [
+                            {
+                                role: 'user',
+                                content: 'Hello! Can you respond with "API is working!" if you receive this message?'
+                            }
+                        ],
+                        max_tokens: 50
+                    })
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    resultDiv.innerHTML = '<p style="color: green;">✅ API is working! Response: ' + data.choices[0].message.content + '</p>';
+                } else {
+                    const error = await response.text();
+                    resultDiv.innerHTML = '<p style="color: red;">❌ API Error: ' + error + '</p>';
+                }
+            } catch (error) {
+                resultDiv.innerHTML = '<p style="color: red;">❌ Network Error: ' + error.message + '</p>';
+            }
+        }
+    </script>
+</body>
+</html> 

@@ -1,0 +1,39 @@
+project_id = "nhuxwgmafdjchljvqlna"
+
+[api]
+enabled = true
+port = 54321
+schemas = ["public", "graphql_public"]
+extra_search_path = ["public", "extensions"]
+max_rows = 1000
+
+[auth]
+enabled = true
+site_url = "http://localhost:3000"
+additional_redirect_urls = ["https://localhost:3000"]
+jwt_expiry = 3600
+refresh_token_reuse_interval = 10
+enable_signup = true
+
+[db]
+port = 54322
+
+[studio]
+enabled = true
+port = 54323
+
+[inbucket]
+enabled = true
+port = 54324
+
+[functions.ai-content-generator]
+verify_jwt = true
+
+[functions.ai-chat]
+verify_jwt = true
+
+[functions.send-notification]
+verify_jwt = false
+
+[functions.content-moderation]
+verify_jwt = true
