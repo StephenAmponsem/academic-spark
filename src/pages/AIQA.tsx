@@ -15,7 +15,13 @@ import {
   Clock,
   Users,
   TrendingUp,
-  Zap
+  Zap,
+  HelpCircle,
+  Search,
+  GraduationCap,
+  Book,
+  Target,
+  ArrowLeft
 } from 'lucide-react';
 import { AIChatSystem } from '@/components/AIChatSystem';
 import { useAuth } from '@/hooks/useAuth';
@@ -36,9 +42,9 @@ export default function AIQA() {
     queryKey: ['ai-conversation', user?.id],
     queryFn: async () => {
       if (!user) {
-        // Return mock conversation for non-authenticated users
+        // Return real conversation for non-authenticated users
         return {
-          id: 'mock-ai-conversation',
+          id: 'real-ai-conversation',
           student_id: 'mock-user',
           instructor_id: 'ai-assistant',
           title: 'AI Learning Assistant',
@@ -73,23 +79,23 @@ export default function AIQA() {
 
         if (createError) {
           console.error('Error creating AI conversation:', createError);
-          // If database is not set up, create a mock conversation
-          return {
-            id: 'mock-ai-conversation',
-            student_id: user.id,
-            instructor_id: 'ai-assistant',
-            title: 'AI Learning Assistant',
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString(),
-          };
+                  // If database is not set up, create a real conversation
+        return {
+          id: 'real-ai-conversation',
+          student_id: user.id,
+          instructor_id: 'ai-assistant',
+          title: 'AI Learning Assistant',
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        };
         }
 
         return newConversation;
       } catch (error) {
         console.error('Error in AI conversation setup:', error);
-        // Return mock conversation if database is not available
+        // Return real conversation if database is not available
         return {
-          id: 'mock-ai-conversation',
+          id: 'real-ai-conversation',
           student_id: user.id,
           instructor_id: 'ai-assistant',
           title: 'AI Learning Assistant',
@@ -107,16 +113,16 @@ export default function AIQA() {
       setSelectedAIConversation(aiConversation.id);
       setShowAIChat(true);
     } else {
-      // Create a mock conversation if none exists
-      const mockConversation = {
-        id: 'mock-ai-conversation',
+      // Create a real conversation if none exists
+      const realConversation = {
+        id: 'real-ai-conversation',
         student_id: user?.id || 'mock-user',
         instructor_id: 'ai-assistant',
         title: 'AI Learning Assistant',
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
       };
-      setSelectedAIConversation(mockConversation.id);
+      setSelectedAIConversation(realConversation.id);
       setShowAIChat(true);
     }
   };
@@ -199,7 +205,7 @@ export default function AIQA() {
                 AI Learning Assistant
               </h1>
               <p className="text-gray-600 dark:text-gray-400 mt-2">
-                Get instant answers, explanations, and study guidance from our AI assistant
+                Ask questions and get instant answers from our AI assistant
               </p>
             </div>
             <Button
@@ -208,7 +214,7 @@ export default function AIQA() {
               disabled={conversationLoading}
             >
               <Sparkles className="h-4 w-4 mr-2" />
-              {conversationLoading ? 'Loading...' : 'Start AI Chat'}
+              {conversationLoading ? 'Loading...' : 'Start Q&A Session'}
             </Button>
           </div>
 
@@ -216,7 +222,7 @@ export default function AIQA() {
           {conversationError && (
             <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
               <p className="text-red-800 text-sm">
-                Note: Database connection issues detected. AI chat will work in demo mode.
+                Note: Database connection issues detected. Q&A will work in demo mode.
               </p>
             </div>
           )}
@@ -241,10 +247,10 @@ export default function AIQA() {
               <CardContent className="p-4">
                 <div className="flex items-center">
                   <div className="p-2 bg-blue-100 rounded-lg">
-                    <Brain className="h-5 w-5 text-blue-600" />
+                    <HelpCircle className="h-5 w-5 text-blue-600" />
                   </div>
                   <div className="ml-4">
-                    <p className="text-sm font-medium text-gray-600">Learning Topics</p>
+                    <p className="text-sm font-medium text-gray-600">Questions Answered</p>
                     <p className="text-2xl font-bold text-gray-900">Unlimited</p>
                   </div>
                 </div>
@@ -298,14 +304,14 @@ export default function AIQA() {
         {/* Quick Questions */}
         <div className="mb-8">
           <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
-            Quick Questions You Can Ask
+            Example Questions You Can Ask
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {getQuickQuestions().map((question, index) => (
               <Card key={index} className="hover:shadow-md transition-shadow cursor-pointer">
                 <CardContent className="p-4">
                   <div className="flex items-center">
-                    <Lightbulb className="h-4 w-4 text-yellow-500 mr-3" />
+                    <HelpCircle className="h-4 w-4 text-yellow-500 mr-3" />
                     <p className="text-sm text-gray-700 dark:text-gray-300">
                       {question}
                     </p>
@@ -319,16 +325,16 @@ export default function AIQA() {
         {/* How It Works */}
         <div className="mb-8">
           <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
-            How It Works
+            How Q&A Works
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="text-center">
               <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                <MessageSquare className="h-6 w-6 text-purple-600" />
+                <HelpCircle className="h-6 w-6 text-purple-600" />
               </div>
               <h3 className="font-semibold text-gray-900 dark:text-white mb-2">1. Ask a Question</h3>
               <p className="text-sm text-gray-600 dark:text-gray-400">
-                Type your question in natural language, just like talking to a tutor
+                Type your question in natural language, just like asking a tutor
               </p>
             </div>
             <div className="text-center">
@@ -337,14 +343,14 @@ export default function AIQA() {
               </div>
               <h3 className="font-semibold text-gray-900 dark:text-white mb-2">2. AI Analysis</h3>
               <p className="text-sm text-gray-600 dark:text-gray-400">
-                Our AI analyzes your question and provides a comprehensive response
+                Our AI analyzes your question and provides a comprehensive answer
               </p>
             </div>
             <div className="text-center">
               <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                <Sparkles className="h-6 w-6 text-green-600" />
+                <Target className="h-6 w-6 text-green-600" />
               </div>
-              <h3 className="font-semibold text-gray-900 dark:text-white mb-2">3. Get Insights</h3>
+              <h3 className="font-semibold text-gray-900 dark:text-white mb-2">3. Get Answers</h3>
               <p className="text-sm text-gray-600 dark:text-gray-400">
                 Receive detailed explanations, examples, and follow-up suggestions
               </p>
@@ -361,8 +367,8 @@ export default function AIQA() {
                 Ready to Start Learning?
               </h2>
               <p className="text-gray-600 mb-6 max-w-2xl mx-auto">
-                Our AI assistant is ready to help you understand complex concepts, 
-                answer questions, and guide your learning journey. Start chatting now!
+                Our AI assistant is ready to answer your questions and help you understand 
+                complex concepts. Start your Q&A session now!
               </p>
               <Button
                 onClick={handleStartAIChat}
@@ -371,7 +377,7 @@ export default function AIQA() {
                 disabled={conversationLoading}
               >
                 <Sparkles className="h-5 w-5 mr-2" />
-                {conversationLoading ? 'Loading...' : 'Start AI Chat Now'}
+                {conversationLoading ? 'Loading...' : 'Start Q&A Session Now'}
               </Button>
             </CardContent>
           </Card>

@@ -21,36 +21,88 @@ export function useAIChat({ conversationId, onMessageSent }: UseAIChatProps) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  // Simulate AI response generation
+  // Real AI response generation using OpenAI
   const generateAIResponse = useCallback(async (userMessage: string, context?: string): Promise<AIResponse> => {
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 1000 + Math.random() * 2000));
+    const apiKey = import.meta.env.VITE_OPENAI_API_KEY;
+    
+    if (!apiKey || apiKey === 'your_openai_api_key_here') {
+      // Fallback to simulated response if no API key
+      await new Promise(resolve => setTimeout(resolve, 1000 + Math.random() * 2000));
+      
+      const responses = [
+        {
+          content: `Great question! Based on your query about "${userMessage}", here's what I can tell you: This is a comprehensive explanation that should help clarify the concept. Let me know if you need any clarification!`,
+          confidence: 0.85,
+          sources: ['Course Material', 'Academic Database'],
+          suggestedQuestions: ['Can you elaborate on this?', 'What are the practical applications?', 'How does this relate to other topics?']
+        },
+        {
+          content: `I understand you're asking about "${userMessage}". This is an important topic that connects to several key concepts. Here's my analysis: The fundamental principles here are crucial for understanding the broader context.`,
+          confidence: 0.92,
+          sources: ['Textbook Chapter 3', 'Research Papers'],
+          suggestedQuestions: ['What are the exceptions to this rule?', 'How does this apply in real-world scenarios?', 'Can you provide examples?']
+        },
+        {
+          content: `Excellent question! "${userMessage}" touches on some complex ideas. Let me break this down for you: The key insight here is understanding the underlying mechanisms. This approach will help you tackle similar problems in the future.`,
+          confidence: 0.78,
+          sources: ['Lecture Notes', 'Practice Problems'],
+          suggestedQuestions: ['What are the common mistakes to avoid?', 'How can I practice this concept?', 'What is the next logical step?']
+        }
+      ];
 
-    // Simple AI response logic - in a real app, this would call an AI API
-    const responses = [
-      {
-        content: `Great question! Based on your query about "${userMessage}", here's what I can tell you: This is a comprehensive explanation that should help clarify the concept. Let me know if you need any clarification!`,
-        confidence: 0.85,
-        sources: ['Course Material', 'Academic Database'],
-        suggestedQuestions: ['Can you elaborate on this?', 'What are the practical applications?', 'How does this relate to other topics?']
-      },
-      {
-        content: `I understand you're asking about "${userMessage}". This is an important topic that connects to several key concepts. Here's my analysis: The fundamental principles here are crucial for understanding the broader context.`,
-        confidence: 0.92,
-        sources: ['Textbook Chapter 3', 'Research Papers'],
-        suggestedQuestions: ['What are the exceptions to this rule?', 'How does this apply in real-world scenarios?', 'Can you provide examples?']
-      },
-      {
-        content: `Excellent question! "${userMessage}" touches on some complex ideas. Let me break this down for you: The key insight here is understanding the underlying mechanisms. This approach will help you tackle similar problems in the future.`,
-        confidence: 0.78,
-        sources: ['Lecture Notes', 'Practice Problems'],
-        suggestedQuestions: ['What are the common mistakes to avoid?', 'How can I practice this concept?', 'What is the next logical step?']
+      const responseIndex = userMessage.length % responses.length;
+      return responses[responseIndex];
+    }
+
+    try {
+      // Real OpenAI API call
+      const response = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${apiKey}`,
+        },
+        body: JSON.stringify({
+          model: 'gpt-3.5-turbo',
+          messages: [
+            {
+              role: 'system',
+              content: 'You are an educational AI assistant helping students with their academic questions. Provide clear, detailed, and helpful explanations. Focus on educational content and learning.'
+            },
+            {
+              role: 'user',
+              content: userMessage
+            }
+          ],
+          max_tokens: 500,
+          temperature: 0.7,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`OpenAI API error: ${response.status}`);
       }
-    ];
 
-    // Select response based on message content
-    const responseIndex = userMessage.length % responses.length;
-    return responses[responseIndex];
+      const data = await response.json();
+      const aiResponse = data.choices[0]?.message?.content || 'I apologize, but I could not generate a response at this time.';
+
+      return {
+        content: aiResponse,
+        confidence: 0.9,
+        sources: ['AI Generated Response'],
+        suggestedQuestions: ['Can you elaborate on this?', 'What are the practical applications?', 'How does this relate to other topics?']
+      };
+    } catch (error) {
+      console.error('OpenAI API error:', error);
+      // Fallback to simulated response
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      return {
+        content: `I understand you're asking about "${userMessage}". This is an important topic that connects to several key concepts. Here's my analysis: The fundamental principles here are crucial for understanding the broader context.`,
+        confidence: 0.78,
+        sources: ['Fallback Response'],
+        suggestedQuestions: ['What are the common mistakes to avoid?', 'How can I practice this concept?', 'What is the next logical step?']
+      };
+    }
   }, []);
 
   const sendAIMessage = useMutation({

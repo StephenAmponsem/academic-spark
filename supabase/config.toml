@@ -9,8 +9,8 @@ max_rows = 1000
 
 [auth]
 enabled = true
-site_url = "http://localhost:3000"
-additional_redirect_urls = ["https://localhost:3000"]
+site_url = "http://localhost:8081"
+additional_redirect_urls = ["http://localhost:8081", "https://localhost:8081", "http://localhost:8080", "https://localhost:8080"]
 jwt_expiry = 3600
 refresh_token_reuse_interval = 10
 enable_signup = true

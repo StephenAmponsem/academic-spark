@@ -14,14 +14,20 @@ import {
   Sparkles,
   MessageSquare,
   Loader2,
-  ChevronRight,
-  Star
+  ChevronLeft,
+  Star,
+  ArrowLeft,
+  Search,
+  HelpCircle,
+  Book,
+  GraduationCap
 } from 'lucide-react';
 import { useAIChat } from '@/hooks/useAIChat';
 import { useAuth } from '@/hooks/useAuth';
 import { Message } from '@/integrations/supabase/types';
 import { formatDistanceToNow } from 'date-fns';
 import { cn } from '@/lib/utils';
+import { realtimeService } from '@/services/realtimeService';
 
 interface AIChatSystemProps {
   conversationId: string;
@@ -29,86 +35,119 @@ interface AIChatSystemProps {
 }
 
 export function AIChatSystem({ conversationId, onBack }: AIChatSystemProps) {
-  const [messageInput, setMessageInput] = useState('');
-  const [suggestedQuestions, setSuggestedQuestions] = useState<string[]>([]);
-  const [demoMode, setDemoMode] = useState(conversationId === 'mock-ai-conversation');
-  const [messages, setMessages] = useState<Array<{id: string, content: string, sender: string, timestamp: Date}>>([]);
+  const [questionInput, setQuestionInput] = useState('');
+  const [currentQuestion, setCurrentQuestion] = useState('');
+  const [currentAnswer, setCurrentAnswer] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [demoMode, setDemoMode] = useState(false); // Disable demo mode for real-time service
+  const [qaHistory, setQaHistory] = useState<Array<{id: string, question: string, answer: string, timestamp: Date}>>([]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { user } = useAuth();
   
   const { sendAIMessage, askAIQuestion, isTyping, isPending } = useAIChat({
     conversationId,
     onMessageSent: (message) => {
-      // Extract suggested questions from AI response
-      if (message.message_type === 'ai-response' && message.file_name) {
-        try {
-          const questions = JSON.parse(message.file_name);
-          setSuggestedQuestions(questions);
-        } catch (e) {
-          console.error('Failed to parse suggested questions:', e);
-        }
+      // Handle AI response
+      if (message.message_type === 'ai-response') {
+        setCurrentAnswer(message.content);
+        setIsLoading(false);
+        
+        // Add to Q&A history
+        const newQA = {
+          id: Date.now().toString(),
+          question: currentQuestion,
+          answer: message.content,
+          timestamp: new Date()
+        };
+        setQaHistory(prev => [...prev, newQA]);
+        setCurrentQuestion('');
+        setCurrentAnswer('');
       }
     }
   });
 
-  // Auto-scroll to bottom when new messages arrive
+  // Auto-scroll to bottom when new Q&A arrives
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages, isTyping]);
+  }, [qaHistory, isLoading]);
 
-  const handleSendMessage = async () => {
-    if (!messageInput.trim()) return;
+  // Subscribe to real-time messages
+  useEffect(() => {
+    const subscription = realtimeService.subscribeToMessages(conversationId, (message) => {
+      if (message.sender_id === 'ai-assistant') {
+        // Handle incoming AI message
+        setCurrentAnswer(message.content);
+        setIsLoading(false);
+        
+        const newQA = {
+          id: message.id,
+          question: currentQuestion,
+          answer: message.content,
+          timestamp: new Date(message.created_at)
+        };
+        setQaHistory(prev => [...prev, newQA]);
+        setCurrentQuestion('');
+        setCurrentAnswer('');
+      }
+    });
 
-    const userMessage = messageInput.trim();
-    setMessageInput('');
-
-    // Add user message to chat
-    const newUserMessage = {
-      id: Date.now().toString(),
-      content: userMessage,
-      sender: 'user',
-      timestamp: new Date()
+    return () => {
+      realtimeService.unsubscribe(`messages:${conversationId}`);
     };
-    setMessages(prev => [...prev, newUserMessage]);
+  }, [conversationId, currentQuestion]);
+
+  const handleAskQuestion = async () => {
+    if (!questionInput.trim()) return;
+
+    const question = questionInput.trim();
+    setQuestionInput('');
+    setCurrentQuestion(question);
+    setIsLoading(true);
 
     if (demoMode) {
-      // Demo mode - simulate AI response without database
+      // Demo mode - simulate AI response
       setTimeout(() => {
-        const aiResponse = `Great question! Based on your query about "${userMessage}", here's what I can tell you: This is a comprehensive explanation that should help clarify the concept. Let me know if you need any clarification!`;
+        const aiResponse = `Great question! Based on your query about "${question}", here's what I can tell you: This is a comprehensive explanation that should help clarify the concept. Let me know if you need any clarification!`;
         
-        const newAIMessage = {
-          id: (Date.now() + 1).toString(),
-          content: aiResponse,
-          sender: 'ai',
+        setCurrentAnswer(aiResponse);
+        setIsLoading(false);
+        
+        const newQA = {
+          id: Date.now().toString(),
+          question: question,
+          answer: aiResponse,
           timestamp: new Date()
         };
-        
-        setMessages(prev => [...prev, newAIMessage]);
-        setSuggestedQuestions(['Can you elaborate on this?', 'What are the practical applications?', 'How does this relate to other topics?']);
+        setQaHistory(prev => [...prev, newQA]);
+        setCurrentQuestion('');
+        setCurrentAnswer('');
       }, 1000);
       return;
     }
 
     try {
       await sendAIMessage.mutateAsync({
-        content: userMessage,
+        content: question,
         messageType: 'text',
       });
     } catch (error) {
-      console.error('Error sending message:', error);
+      console.error('Error sending question:', error);
       // Fallback to demo mode if database fails
       setTimeout(() => {
-        const aiResponse = `I understand you're asking about "${userMessage}". This is an important topic that connects to several key concepts. Here's my analysis: The fundamental principles here are crucial for understanding the broader context.`;
+        const aiResponse = `I understand you're asking about "${question}". This is an important topic that connects to several key concepts. Here's my analysis: The fundamental principles here are crucial for understanding the broader context.`;
         
-        const newAIMessage = {
-          id: (Date.now() + 1).toString(),
-          content: aiResponse,
-          sender: 'ai',
+        setCurrentAnswer(aiResponse);
+        setIsLoading(false);
+        
+        const newQA = {
+          id: Date.now().toString(),
+          question: question,
+          answer: aiResponse,
           timestamp: new Date()
         };
-        
-        setMessages(prev => [...prev, newAIMessage]);
-        setSuggestedQuestions(['What are the exceptions to this rule?', 'How does this apply in real-world scenarios?', 'Can you provide examples?']);
+        setQaHistory(prev => [...prev, newQA]);
+        setCurrentQuestion('');
+        setCurrentAnswer('');
       }, 1000);
     }
   };
@@ -116,26 +155,29 @@ export function AIChatSystem({ conversationId, onBack }: AIChatSystemProps) {
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
-      handleSendMessage();
+      handleAskQuestion();
     }
   };
 
-  const handleSuggestedQuestion = async (question: string) => {
-    setMessageInput(question);
+  const handleQuickQuestion = async (question: string) => {
+    setQuestionInput(question);
     if (demoMode) {
       // Demo mode - simulate AI response
       setTimeout(() => {
         const aiResponse = `I understand you're asking about "${question}". This is an important topic that connects to several key concepts. Here's my analysis: The fundamental principles here are crucial for understanding the broader context.`;
         
-        const newAIMessage = {
-          id: (Date.now() + 1).toString(),
-          content: aiResponse,
-          sender: 'ai',
+        setCurrentAnswer(aiResponse);
+        setIsLoading(false);
+        
+        const newQA = {
+          id: Date.now().toString(),
+          question: question,
+          answer: aiResponse,
           timestamp: new Date()
         };
-        
-        setMessages(prev => [...prev, newAIMessage]);
-        setSuggestedQuestions(['What are the exceptions to this rule?', 'How does this apply in real-world scenarios?', 'Can you provide examples?']);
+        setQaHistory(prev => [...prev, newQA]);
+        setCurrentQuestion('');
+        setCurrentAnswer('');
       }, 1000);
     } else {
       try {
@@ -146,15 +188,18 @@ export function AIChatSystem({ conversationId, onBack }: AIChatSystemProps) {
         setTimeout(() => {
           const aiResponse = `I understand you're asking about "${question}". This is an important topic that connects to several key concepts. Here's my analysis: The fundamental principles here are crucial for understanding the broader context.`;
           
-          const newAIMessage = {
-            id: (Date.now() + 1).toString(),
-            content: aiResponse,
-            sender: 'ai',
+          setCurrentAnswer(aiResponse);
+          setIsLoading(false);
+          
+          const newQA = {
+            id: Date.now().toString(),
+            question: question,
+            answer: aiResponse,
             timestamp: new Date()
           };
-          
-          setMessages(prev => [...prev, newAIMessage]);
-          setSuggestedQuestions(['What are the exceptions to this rule?', 'How does this apply in real-world scenarios?', 'Can you provide examples?']);
+          setQaHistory(prev => [...prev, newQA]);
+          setCurrentQuestion('');
+          setCurrentAnswer('');
         }, 1000);
       }
     }
@@ -162,12 +207,23 @@ export function AIChatSystem({ conversationId, onBack }: AIChatSystemProps) {
 
   return (
     <div className="flex h-[600px] bg-white rounded-lg shadow-lg overflow-hidden">
-      {/* AI Chat Area */}
+      {/* Q&A Area */}
       <div className="flex-1 flex flex-col">
-        {/* Chat Header */}
+        {/* Header with Back Button */}
         <div className="p-4 border-b border-gray-200 bg-gradient-to-r from-purple-50 to-blue-50">
           <div className="flex items-center justify-between">
             <div className="flex items-center">
+              {onBack && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={onBack}
+                  className="mr-3 border-gray-300 hover:bg-gray-50"
+                >
+                  <ArrowLeft className="h-4 w-4 mr-2" />
+                  Back to Dashboard
+                </Button>
+              )}
               <Avatar className="h-8 w-8 mr-3">
                 <AvatarFallback className="bg-gradient-to-br from-purple-500 to-blue-600">
                   <Bot className="h-4 w-4 text-white" />
@@ -178,8 +234,14 @@ export function AIChatSystem({ conversationId, onBack }: AIChatSystemProps) {
                   AI Learning Assistant
                   <Badge variant="secondary" className="ml-2">
                     <Sparkles className="h-3 w-3 mr-1" />
-                    AI
+                    Q&A
                   </Badge>
+                  {isLoading && (
+                    <Badge variant="default" className="ml-2 bg-green-500">
+                      <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+                      Processing
+                    </Badge>
+                  )}
                   {demoMode && (
                     <Badge variant="outline" className="ml-2">
                       Demo Mode
@@ -187,19 +249,14 @@ export function AIChatSystem({ conversationId, onBack }: AIChatSystemProps) {
                   )}
                 </h3>
                 <p className="text-xs text-gray-500">
-                  Ask me anything about your course material
+                  Ask questions and get instant answers
                 </p>
               </div>
             </div>
-            {onBack && (
-              <Button variant="ghost" size="sm" onClick={onBack}>
-                <ChevronRight className="h-4 w-4" />
-              </Button>
-            )}
           </div>
         </div>
 
-        {/* Messages */}
+        {/* Q&A Content */}
         <ScrollArea className="flex-1 p-4">
           <div className="space-y-4">
             {/* Welcome Message */}
@@ -210,16 +267,7 @@ export function AIChatSystem({ conversationId, onBack }: AIChatSystemProps) {
                   <span className="text-xs font-medium text-purple-700">AI Assistant</span>
                 </div>
                 <p className="text-sm text-gray-700">
-                  Hello! I'm your AI learning assistant. I can help you with:
-                </p>
-                <ul className="text-xs text-gray-600 mt-2 space-y-1">
-                  <li>• Explaining complex concepts</li>
-                  <li>• Answering questions about course material</li>
-                  <li>• Providing study guidance</li>
-                  <li>• Suggesting related topics to explore</li>
-                </ul>
-                <p className="text-xs text-gray-500 mt-2">
-                  Just ask me anything!
+                  Hello! I'm your AI learning assistant. Ask me any question about your course material and I'll provide detailed answers.
                 </p>
                 {demoMode && (
                   <p className="text-xs text-orange-600 mt-2 font-medium">
@@ -229,61 +277,73 @@ export function AIChatSystem({ conversationId, onBack }: AIChatSystemProps) {
               </div>
             </div>
 
-            {/* Chat Messages */}
-            {messages.map((message) => (
-              <div key={message.id} className={`flex ${message.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
-                <div className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
-                  message.sender === 'user' 
-                    ? 'bg-blue-500 text-white' 
-                    : 'bg-gradient-to-r from-purple-100 to-blue-100 border border-purple-200'
-                }`}>
-                  <div className="flex items-center gap-2 mb-1">
-                    {message.sender === 'ai' && <Bot className="h-3 w-3 text-purple-600" />}
-                    <span className="text-xs font-medium">
-                      {message.sender === 'user' ? 'You' : 'AI Assistant'}
-                    </span>
-                    <span className="text-xs opacity-70">
-                      {formatDistanceToNow(message.timestamp, { addSuffix: true })}
-                    </span>
+            {/* Q&A History */}
+            {qaHistory.map((qa) => (
+              <div key={qa.id} className="space-y-3">
+                {/* Question */}
+                <div className="flex justify-end">
+                  <div className="max-w-xs lg:max-w-md px-4 py-2 rounded-lg bg-blue-500 text-white">
+                    <div className="flex items-center gap-2 mb-1">
+                      <HelpCircle className="h-3 w-3" />
+                      <span className="text-xs font-medium">Your Question</span>
+                      <span className="text-xs opacity-70">
+                        {formatDistanceToNow(qa.timestamp, { addSuffix: true })}
+                      </span>
+                    </div>
+                    <p className="text-sm">{qa.question}</p>
                   </div>
-                  <p className="text-sm">{message.content}</p>
+                </div>
+
+                {/* Answer */}
+                <div className="flex justify-start">
+                  <div className="max-w-xs lg:max-w-md px-4 py-2 rounded-lg bg-gradient-to-r from-purple-100 to-blue-100 border border-purple-200">
+                    <div className="flex items-center gap-2 mb-1">
+                      <Bot className="h-3 w-3 text-purple-600" />
+                      <span className="text-xs font-medium text-purple-700">AI Answer</span>
+                    </div>
+                    <p className="text-sm">{qa.answer}</p>
+                  </div>
                 </div>
               </div>
             ))}
 
-            {/* AI Typing Indicator */}
-            {isTyping && (
-              <div className="flex justify-start">
-                <div className="max-w-xs lg:max-w-md px-4 py-2 rounded-lg bg-gradient-to-r from-purple-100 to-blue-100 border border-purple-200">
-                  <div className="flex items-center gap-2">
-                    <Bot className="h-4 w-4 text-purple-600" />
-                    <span className="text-xs font-medium text-purple-700">AI Assistant</span>
-                    <Loader2 className="h-3 w-3 animate-spin text-purple-600" />
+            {/* Current Question and Answer */}
+            {currentQuestion && (
+              <div className="space-y-3">
+                {/* Current Question */}
+                <div className="flex justify-end">
+                  <div className="max-w-xs lg:max-w-md px-4 py-2 rounded-lg bg-blue-500 text-white">
+                    <div className="flex items-center gap-2 mb-1">
+                      <HelpCircle className="h-3 w-3" />
+                      <span className="text-xs font-medium">Your Question</span>
+                    </div>
+                    <p className="text-sm">{currentQuestion}</p>
                   </div>
-                  <p className="text-xs text-gray-600 mt-1">Thinking...</p>
                 </div>
-              </div>
-            )}
 
-            {/* Suggested Questions */}
-            {suggestedQuestions.length > 0 && (
-              <div className="space-y-2">
-                <p className="text-xs text-gray-500 font-medium">Suggested follow-up questions:</p>
-                <div className="flex flex-wrap gap-2">
-                  {suggestedQuestions.map((question, index) => (
-                    <Button
-                      key={index}
-                      variant="outline"
-                      size="sm"
-                      className="text-xs h-auto p-2"
-                      onClick={() => handleSuggestedQuestion(question)}
-                      disabled={isPending}
-                    >
-                      <Lightbulb className="h-3 w-3 mr-1" />
-                      {question}
-                    </Button>
-                  ))}
-                </div>
+                {/* Loading or Answer */}
+                {isLoading ? (
+                  <div className="flex justify-start">
+                    <div className="max-w-xs lg:max-w-md px-4 py-2 rounded-lg bg-gradient-to-r from-purple-100 to-blue-100 border border-purple-200">
+                      <div className="flex items-center gap-2">
+                        <Bot className="h-4 w-4 text-purple-600" />
+                        <span className="text-xs font-medium text-purple-700">AI Assistant</span>
+                        <Loader2 className="h-3 w-3 animate-spin text-purple-600" />
+                      </div>
+                      <p className="text-xs text-gray-600 mt-1">Thinking...</p>
+                    </div>
+                  </div>
+                ) : currentAnswer && (
+                  <div className="flex justify-start">
+                    <div className="max-w-xs lg:max-w-md px-4 py-2 rounded-lg bg-gradient-to-r from-purple-100 to-blue-100 border border-purple-200">
+                      <div className="flex items-center gap-2 mb-1">
+                        <Bot className="h-3 w-3 text-purple-600" />
+                        <span className="text-xs font-medium text-purple-700">AI Answer</span>
+                      </div>
+                      <p className="text-sm">{currentAnswer}</p>
+                    </div>
+                  </div>
+                )}
               </div>
             )}
 
@@ -291,25 +351,25 @@ export function AIChatSystem({ conversationId, onBack }: AIChatSystemProps) {
           </div>
         </ScrollArea>
 
-        {/* Message Input */}
+        {/* Question Input */}
         <div className="p-4 border-t border-gray-200">
           <div className="flex items-center gap-2">
             <div className="flex-1 relative">
               <Input
-                value={messageInput}
-                onChange={(e) => setMessageInput(e.target.value)}
+                value={questionInput}
+                onChange={(e) => setQuestionInput(e.target.value)}
                 onKeyPress={handleKeyPress}
-                placeholder="Ask me anything about your course..."
+                placeholder="Ask your question here..."
                 className="pr-12"
-                disabled={isPending}
+                disabled={isLoading}
               />
               <Button
                 size="sm"
                 className="absolute right-1 top-1/2 transform -translate-y-1/2 h-8 w-8 p-0"
-                onClick={handleSendMessage}
-                disabled={!messageInput.trim() || isPending}
+                onClick={handleAskQuestion}
+                disabled={!questionInput.trim() || isLoading}
               >
-                {isPending ? (
+                {isLoading ? (
                   <Loader2 className="h-4 w-4 animate-spin" />
                 ) : (
                   <Send className="h-4 w-4" />
@@ -318,14 +378,14 @@ export function AIChatSystem({ conversationId, onBack }: AIChatSystemProps) {
             </div>
           </div>
           
-          {/* Quick Actions */}
+          {/* Quick Questions */}
           <div className="flex gap-2 mt-2">
             <Button
               variant="outline"
               size="sm"
               className="text-xs"
-              onClick={() => handleSuggestedQuestion("Can you explain the main concepts from today's lesson?")}
-              disabled={isPending}
+              onClick={() => handleQuickQuestion("Can you explain the main concepts from today's lesson?")}
+              disabled={isLoading}
             >
               <BookOpen className="h-3 w-3 mr-1" />
               Explain Concepts
@@ -334,8 +394,8 @@ export function AIChatSystem({ conversationId, onBack }: AIChatSystemProps) {
               variant="outline"
               size="sm"
               className="text-xs"
-              onClick={() => handleSuggestedQuestion("What are the key takeaways from this topic?")}
-              disabled={isPending}
+              onClick={() => handleQuickQuestion("What are the key takeaways from this topic?")}
+              disabled={isLoading}
             >
               <Brain className="h-3 w-3 mr-1" />
               Key Takeaways
@@ -344,10 +404,10 @@ export function AIChatSystem({ conversationId, onBack }: AIChatSystemProps) {
               variant="outline"
               size="sm"
               className="text-xs"
-              onClick={() => handleSuggestedQuestion("Can you provide some practice questions?")}
-              disabled={isPending}
+              onClick={() => handleQuickQuestion("Can you provide some practice questions?")}
+              disabled={isLoading}
             >
-              <Star className="h-3 w-3 mr-1" />
+              <GraduationCap className="h-3 w-3 mr-1" />
               Practice Questions
             </Button>
           </div>
