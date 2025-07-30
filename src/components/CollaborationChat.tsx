@@ -19,28 +19,37 @@ interface Message {
   isOwn: boolean;
 }
 
+interface Group {
+  id: string;
+  name: string;
+  members?: Array<{ id: string; name: string }>;
+}
+
 interface ChatProps {
-  peer: {
+  peer?: {
     id: string;
     name: string;
-    avatar?: string;
-    status: 'online' | 'offline' | 'busy';
-    isInstructor: boolean;
+    role?: string;
+    isInstructor?: boolean;
   };
+  group?: Group;
   onClose: () => void;
   isMinimized: boolean;
   onToggleMinimize: () => void;
 }
 
-export const CollaborationChat = ({ peer, onClose, isMinimized, onToggleMinimize }: ChatProps) => {
-  const { user } = useAuth();
+export const CollaborationChat = ({ peer, group, onClose, isMinimized, onToggleMinimize }: ChatProps) => {
+  const { user, role } = useAuth();
   const [inputMessage, setInputMessage] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
+  const [showMembers, setShowMembers] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Real-time messaging
-  const { messages, sendMessage, isConnected } = useRealtimeMessages(peer.id);
+  const conversationId = group ? group.id : peer?.id;
+  const { messages, sendMessage, isConnected } = useRealtimeMessages(conversationId);
 
   useEffect(() => {
     if (scrollAreaRef.current) {
@@ -50,7 +59,11 @@ export const CollaborationChat = ({ peer, onClose, isMinimized, onToggleMinimize
 
   const handleSendMessage = async () => {
     if (!inputMessage.trim()) return;
-
+    // Allow all group members to send messages in group chat, or students/instructors in 1:1
+    if (!group && role !== 'student' && role !== 'instructor') {
+      toast.error('Only students and instructors can send messages.');
+      return;
+    }
     try {
       await sendMessage(inputMessage.trim(), user?.email || 'You');
       setInputMessage('');
@@ -67,8 +80,15 @@ export const CollaborationChat = ({ peer, onClose, isMinimized, onToggleMinimize
     }
   };
 
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      toast.info('File sharing coming soon!');
+    }
+  };
+
   const handleVideoCall = () => {
-    toast.success('Video call feature coming soon!');
+    toast.info('Group video call feature coming soon!');
   };
 
   const handleVoiceCall = () => {
@@ -98,18 +118,18 @@ export const CollaborationChat = ({ peer, onClose, isMinimized, onToggleMinimize
               <div className="flex items-center gap-3">
                 <div className="relative">
                   <Avatar className="h-8 w-8 shadow-lg">
-                    <AvatarImage src={peer.avatar} />
+                    <AvatarImage src={peer?.avatar} />
                     <AvatarFallback className="text-sm bg-gradient-to-r from-blue-600 to-purple-600 text-white">
-                      {peer.name.split(' ').map(n => n[0]).join('')}
+                      {peer?.name.split(' ').map(n => n[0]).join('')}
                     </AvatarFallback>
                   </Avatar>
-                  <div className={`absolute -bottom-1 -right-1 w-3 h-3 rounded-full border-2 border-white dark:border-gray-800 ${getStatusColor(peer.status)}`} />
+                  <div className={`absolute -bottom-1 -right-1 w-3 h-3 rounded-full border-2 border-white dark:border-gray-800 ${getStatusColor(peer?.status || 'offline')}`} />
                 </div>
                 <div>
-                  <p className="text-sm font-semibold">{peer.name}</p>
+                  <p className="text-sm font-semibold">{peer?.name}</p>
                   <div className="flex items-center gap-1">
                     <Badge variant="secondary" className="text-xs">
-                      {peer.status}
+                      {peer?.status}
                     </Badge>
                     {isConnected ? (
                       <Wifi className="h-3 w-3 text-emerald-500" />
@@ -135,189 +155,66 @@ export const CollaborationChat = ({ peer, onClose, isMinimized, onToggleMinimize
   }
 
   return (
-    <div className="fixed bottom-4 right-4 z-50">
-      <Card className="w-96 h-96 shadow-2xl flex flex-col bg-gradient-to-br from-white to-blue-50 dark:from-gray-800 dark:to-blue-900/20 border-0">
-        <CardHeader className="pb-2">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="relative">
-                <Avatar className="h-10 w-10 shadow-lg">
-                  <AvatarImage src={peer.avatar} />
-                  <AvatarFallback className="text-base bg-gradient-to-r from-blue-600 to-purple-600 text-white">
-                    {peer.name.split(' ').map(n => n[0]).join('')}
-                  </AvatarFallback>
-                </Avatar>
-                <div className={`absolute -bottom-1 -right-1 w-4 h-4 rounded-full border-3 border-white dark:border-gray-800 ${getStatusColor(peer.status)}`} />
-              </div>
-              <div>
-                <p className="font-semibold text-base">{peer.name}</p>
-                <div className="flex items-center gap-2">
-                  <Badge variant="secondary" className="text-xs">
-                    {peer.status}
-                  </Badge>
-                  {peer.isInstructor && (
-                    <Badge variant="default" className="text-xs bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300">
-                      Instructor
-                    </Badge>
-                  )}
-                  {isConnected ? (
-                    <Wifi className="h-3 w-3 text-emerald-500" />
-                  ) : (
-                    <WifiOff className="h-3 w-3 text-red-500" />
-                  )}
-                </div>
-              </div>
-            </div>
-            <div className="flex gap-1">
-              <Button size="sm" variant="ghost" onClick={handleVideoCall} className="hover:bg-blue-50 dark:hover:bg-blue-900/20">
-                <Video className="h-4 w-4" />
-              </Button>
-              <Button size="sm" variant="ghost" onClick={handleVoiceCall} className="hover:bg-green-50 dark:hover:bg-green-900/20">
-                <Phone className="h-4 w-4" />
-              </Button>
-              <Button size="sm" variant="ghost" onClick={onToggleMinimize} className="hover:bg-amber-50 dark:hover:bg-amber-900/20">
-                <Minimize2 className="h-4 w-4" />
-              </Button>
-              <Button size="sm" variant="ghost" onClick={onClose} className="hover:bg-red-50 dark:hover:bg-red-900/20">
-                <X className="h-4 w-4" />
-              </Button>
-            </div>
-          </div>
-        </CardHeader>
-
-        <CardContent className="flex-1 flex flex-col p-0">
-          <ScrollArea className="flex-1 px-4" ref={scrollAreaRef}>
-            <div className="space-y-4 py-4">
-              {messages.length === 0 ? (
-                <div className="text-center py-8">
-                  <div className="mb-4">
-                    <div className="relative inline-block">
-                      <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full blur-xl opacity-20"></div>
-                      <div className="relative bg-white dark:bg-gray-800 rounded-full p-3 shadow-lg">
-                        <Sparkles className="h-8 w-8 text-blue-600 dark:text-blue-400" />
-                      </div>
-                    </div>
+    <Card className="relative w-full max-w-2xl mx-auto shadow-xl">
+      <CardHeader className="flex flex-row items-center justify-between gap-2 border-b">
+        <div>
+          <CardTitle>
+            {group ? (
+              <>
+                {group.name} <Badge>Group</Badge>
+                <button onClick={() => setShowMembers(!showMembers)} className="ml-2 text-xs underline text-blue-600">{showMembers ? 'Hide' : 'Show'} Members</button>
+                {showMembers && (
+                  <div className="mt-2 text-xs bg-slate-50 dark:bg-slate-800 p-2 rounded shadow-inner">
+                    <div className="font-semibold mb-1">Members:</div>
+                    <ul className="list-disc ml-4">
+                      {group.members?.map(m => <li key={m.id}>{m.name}</li>)}
+                    </ul>
                   </div>
-                  <p className="text-sm text-muted-foreground font-medium">Start the conversation!</p>
-                  <p className="text-xs text-muted-foreground mt-1">Send a message to begin chatting</p>
-                </div>
-              ) : (
-                messages.map((message) => (
-                  <div
-                    key={message.id}
-                    className={`flex gap-3 ${
-                      message.sender_id === 'current-user' ? 'justify-end' : 'justify-start'
-                    }`}
-                  >
-                    {message.sender_id !== 'current-user' && (
-                      <Avatar className="h-8 w-8 shadow-sm">
-                        <AvatarImage src={peer.avatar} />
-                        <AvatarFallback className="text-xs bg-gradient-to-r from-blue-600 to-purple-600 text-white">
-                          {peer.name.split(' ').map(n => n[0]).join('')}
-                        </AvatarFallback>
-                      </Avatar>
-                    )}
-                    
-                    <div
-                      className={`max-w-[75%] rounded-2xl p-3 shadow-sm ${
-                        message.sender_id === 'current-user'
-                          ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white'
-                          : 'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700'
-                      }`}
-                    >
-                      <p className="text-sm whitespace-pre-wrap">{message.content}</p>
-                      <p className={`text-xs mt-1 ${
-                        message.sender_id === 'current-user' 
-                          ? 'text-blue-100' 
-                          : 'text-muted-foreground'
-                      }`}>
-                        {new Date(message.created_at).toLocaleTimeString([], { 
-                          hour: '2-digit', 
-                          minute: '2-digit' 
-                        })}
-                      </p>
-                    </div>
-                    
-                    {message.sender_id === 'current-user' && (
-                      <Avatar className="h-8 w-8 shadow-sm">
-                        <AvatarFallback className="text-xs bg-gradient-to-r from-emerald-600 to-green-600 text-white">
-                          You
-                        </AvatarFallback>
-                      </Avatar>
-                    )}
-                  </div>
-                ))
-              )}
-              
-              {isTyping && (
-                <div className="flex gap-3 justify-start">
-                  <Avatar className="h-8 w-8 shadow-sm">
-                    <AvatarImage src={peer.avatar} />
-                    <AvatarFallback className="text-xs bg-gradient-to-r from-blue-600 to-purple-600 text-white">
-                      {peer.name.split(' ').map(n => n[0]).join('')}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl p-3 shadow-sm">
-                    <div className="flex gap-1">
-                      <div className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce"></div>
-                      <div className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-                      <div className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-          </ScrollArea>
-
-          <div className="p-4 border-t border-gray-200 dark:border-gray-700 bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm">
-            <div className="flex gap-2 items-end">
-              <div className="flex-1 relative">
-                <Input
-                  value={inputMessage}
-                  onChange={(e) => setInputMessage(e.target.value)}
-                  onKeyPress={handleKeyPress}
-                  placeholder="Type your message..."
-                  className="pr-20 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 focus:border-blue-500 dark:focus:border-blue-400"
-                  disabled={!isConnected}
-                />
-                <div className="absolute right-2 top-1/2 transform -translate-y-1/2 flex gap-1">
-                  <Button size="sm" variant="ghost" className="h-6 w-6 p-0 hover:bg-blue-50 dark:hover:bg-blue-900/20">
-                    <Smile className="h-3 w-3" />
-                  </Button>
-                  <Button size="sm" variant="ghost" className="h-6 w-6 p-0 hover:bg-blue-50 dark:hover:bg-blue-900/20">
-                    <Paperclip className="h-3 w-3" />
-                  </Button>
-                </div>
-              </div>
-              <div className="flex gap-1">
-                <Button 
-                  size="sm" 
-                  variant="ghost" 
-                  onClick={handleVoiceRecord}
-                  className={`h-10 w-10 p-0 ${isRecording ? 'bg-red-100 dark:bg-red-900/20 text-red-600' : 'hover:bg-green-50 dark:hover:bg-green-900/20'}`}
-                  disabled={!isConnected}
-                >
-                  <Mic className="h-4 w-4" />
-                </Button>
-                <Button 
-                  onClick={handleSendMessage} 
-                  size="sm" 
-                  disabled={!isConnected || !inputMessage.trim()}
-                  className="h-10 w-10 p-0 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-lg disabled:opacity-50"
-                >
-                  <Send className="h-4 w-4" />
-                </Button>
-              </div>
-            </div>
-            {!isConnected && (
-              <p className="text-xs text-red-500 mt-1 flex items-center gap-1">
-                <WifiOff className="h-3 w-3" />
-                Connection lost. Trying to reconnect...
-              </p>
+                )}
+              </>
+            ) : (
+              <>
+                {peer?.name} <Badge>{peer?.role || (peer?.isInstructor ? 'instructor' : 'student')}</Badge>
+              </>
             )}
-          </div>
-        </CardContent>
-      </Card>
-    </div>
+          </CardTitle>
+        </div>
+        <div className="flex gap-2">
+          <Button size="icon" variant="ghost" onClick={handleVideoCall} title="Video Call">
+            <Video className="w-5 h-5" />
+          </Button>
+          <Button size="icon" variant="ghost" onClick={onClose} title="Close">
+            <X className="w-5 h-5" />
+          </Button>
+        </div>
+      </CardHeader>
+      <CardContent className="h-96 overflow-y-auto p-4" ref={scrollAreaRef}>
+        <div className="flex flex-col gap-3">
+          {messages.map((message, idx) => (
+            <div key={message.id} className={`flex ${message.isOwn ? 'justify-end' : 'justify-start'}`}> 
+              <div className={`rounded-lg px-3 py-2 shadow ${message.isOwn ? 'bg-blue-100 dark:bg-blue-900/40 text-right' : 'bg-slate-100 dark:bg-slate-800/60 text-left'}`}> 
+                <div className="text-xs font-semibold mb-1">{message.sender}</div>
+                <div>{message.content}</div>
+                <div className="text-[10px] text-slate-400 mt-1">{new Date(message.timestamp).toLocaleTimeString()}</div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </CardContent>
+      <div className="flex items-center gap-2 border-t p-3 bg-slate-50 dark:bg-slate-900">
+        <Button size="icon" variant="ghost" onClick={() => fileInputRef.current?.click()} title="Attach File">
+          <Paperclip className="w-5 h-5" />
+        </Button>
+        <input type="file" ref={fileInputRef} className="hidden" onChange={handleFileUpload} />
+        <input
+          className="flex-1 border rounded p-2 bg-white dark:bg-slate-800"
+          placeholder="Type a message..."
+          value={inputMessage}
+          onChange={e => setInputMessage(e.target.value)}
+          onKeyDown={handleKeyPress}
+        />
+        <Button onClick={handleSendMessage} className="bg-blue-600 text-white">Send</Button>
+      </div>
+    </Card>
   );
 }; 

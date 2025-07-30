@@ -160,3 +160,59 @@ BEGIN
   );
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER; 
+
+-- Create study_groups table if it doesn't exist
+DO $$ 
+BEGIN
+    IF NOT EXISTS (SELECT FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'study_groups') THEN
+        CREATE TABLE public.study_groups (
+            id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+            name TEXT NOT NULL,
+            description TEXT,
+            subject TEXT,
+            created_by UUID REFERENCES public.profiles(id) ON DELETE SET NULL,
+            created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+            is_active BOOLEAN DEFAULT TRUE
+        );
+    END IF;
+END $$;
+
+-- Create study_group_members table if it doesn't exist
+DO $$ 
+BEGIN
+    IF NOT EXISTS (SELECT FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'study_group_members') THEN
+        CREATE TABLE public.study_group_members (
+            id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+            group_id UUID REFERENCES public.study_groups(id) ON DELETE CASCADE,
+            user_id UUID REFERENCES public.profiles(id) ON DELETE CASCADE,
+            joined_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+            UNIQUE(group_id, user_id)
+        );
+    END IF;
+END $$;
+
+-- Enable RLS and add basic policies
+ALTER TABLE public.study_groups ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.study_group_members ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Users can view study groups" ON public.study_groups;
+CREATE POLICY "Users can view study groups" ON public.study_groups
+  FOR SELECT USING (true);
+
+DROP POLICY IF EXISTS "Instructors can create study groups" ON public.study_groups;
+CREATE POLICY "Instructors can create study groups" ON public.study_groups
+  FOR INSERT WITH CHECK (
+    created_by = auth.uid()
+  );
+
+DROP POLICY IF EXISTS "Users can join study groups" ON public.study_group_members;
+CREATE POLICY "Users can join study groups" ON public.study_group_members
+  FOR INSERT WITH CHECK (
+    user_id = auth.uid()
+  );
+
+DROP POLICY IF EXISTS "Users can view their study group memberships" ON public.study_group_members;
+CREATE POLICY "Users can view their study group memberships" ON public.study_group_members
+  FOR SELECT USING (
+    user_id = auth.uid()
+  ); 

@@ -53,6 +53,8 @@ import {
 } from "lucide-react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { supabase } from "@/lib/supabaseClient";
 
 interface Peer {
   id: string;
@@ -90,7 +92,7 @@ interface HelpRequest {
 }
 
 const Collaboration = () => {
-  const { user } = useAuth();
+  const { user, role } = useAuth();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const [activeTab, setActiveTab] = useState(() => {
@@ -106,6 +108,12 @@ const Collaboration = () => {
     description: '',
     subject: '',
     urgency: 'medium' as 'low' | 'medium' | 'high'
+  });
+  const [showCreateGroup, setShowCreateGroup] = useState(false);
+  const [newGroup, setNewGroup] = useState({
+    name: '',
+    description: '',
+    subject: '',
   });
 
   // Real-time hooks
@@ -239,6 +247,30 @@ const Collaboration = () => {
     createHelpRequest(newRequest);
     setNewRequest({ title: '', description: '', subject: '', urgency: 'medium' });
     setShowCreateRequest(false);
+  };
+
+  const handleCreateGroup = async () => {
+    if (!newGroup.name || !newGroup.subject) {
+      toast.error('Please fill in all required fields');
+      return;
+    }
+    try {
+      // Insert group into study_groups table
+      const { error } = await supabase
+        .from('study_groups')
+        .insert({
+          name: newGroup.name,
+          description: newGroup.description,
+          subject: newGroup.subject,
+          created_by: user.id,
+        });
+      if (error) throw error;
+      toast.success('Study group created!');
+      setShowCreateGroup(false);
+      setNewGroup({ name: '', description: '', subject: '' });
+    } catch (err) {
+      toast.error('Failed to create group');
+    }
   };
 
   if (!user) {
@@ -480,38 +512,26 @@ const Collaboration = () => {
                     <BookOpen className="h-5 w-5 text-green-600" />
                     Study Groups
                   </CardTitle>
-                  <Button onClick={() => toast.success('Create group feature coming soon!')} className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white shadow-lg">
-                    <Plus className="h-4 w-4 mr-2" />
-                    Create Group
-                  </Button>
+                  {role === 'instructor' && (
+                    <Button onClick={() => setShowCreateGroup(true)} className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white shadow-lg">
+                      <Plus className="h-4 w-4 mr-2" />
+                      Create Group
+                    </Button>
+                  )}
                 </div>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {studyGroups.map((group) => (
-                    <Card key={group.id} className="group hover:shadow-2xl transition-all duration-300 border-0 shadow-lg hover:scale-105 overflow-hidden">
-                      <CardContent className="p-6">
-                        <div className="flex items-start justify-between mb-4">
-                          <div className="flex-1">
-                            <h3 className="font-bold text-lg mb-2">{group.name}</h3>
-                            <p className="text-sm text-muted-foreground line-clamp-2">{group.description}</p>
-                          </div>
-                          <Badge variant={group.isActive ? "default" : "secondary"} className="ml-2">
-                            {group.isActive ? 'Active' : 'Inactive'}
-                          </Badge>
-                        </div>
+                    <Card key={group.id} className="border border-green-200 dark:border-green-800">
+                      <CardHeader>
+                        <CardTitle>{group.name}</CardTitle>
+                      </CardHeader>
+                      <CardContent>
                         <div className="space-y-3 mb-4">
                           <div className="flex items-center gap-2 text-sm">
                             <MapPin className="h-4 w-4 text-green-600" />
                             <span className="font-medium">{group.subject}</span>
-                          </div>
-                          <div className="flex items-center gap-2 text-sm">
-                            <Users className="h-4 w-4 text-blue-600" />
-                            <span>{group.members}/{group.maxMembers} members</span>
-                          </div>
-                          <div className="flex items-center gap-2 text-sm">
-                            <Clock className="h-4 w-4 text-amber-600" />
-                            <span>{group.meetingTime}</span>
                           </div>
                           <div className="flex items-center gap-2 text-sm">
                             <User className="h-4 w-4 text-purple-600" />
@@ -521,9 +541,8 @@ const Collaboration = () => {
                         <Button
                           onClick={() => handleJoinGroup(group)}
                           className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white shadow-lg"
-                          disabled={group.members >= group.maxMembers}
                         >
-                          {group.members >= group.maxMembers ? 'Group Full' : 'Join Group'}
+                          Join Group
                         </Button>
                       </CardContent>
                     </Card>
@@ -531,6 +550,37 @@ const Collaboration = () => {
                 </div>
               </CardContent>
             </Card>
+            {/* Create Group Modal */}
+            <Dialog open={showCreateGroup} onOpenChange={setShowCreateGroup}>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Create Study Group</DialogTitle>
+                </DialogHeader>
+                <div className="space-y-4">
+                  <input
+                    className="w-full border rounded p-2"
+                    placeholder="Group Name"
+                    value={newGroup.name}
+                    onChange={e => setNewGroup({ ...newGroup, name: e.target.value })}
+                  />
+                  <input
+                    className="w-full border rounded p-2"
+                    placeholder="Subject"
+                    value={newGroup.subject}
+                    onChange={e => setNewGroup({ ...newGroup, subject: e.target.value })}
+                  />
+                  <textarea
+                    className="w-full border rounded p-2"
+                    placeholder="Description (optional)"
+                    value={newGroup.description}
+                    onChange={e => setNewGroup({ ...newGroup, description: e.target.value })}
+                  />
+                </div>
+                <DialogFooter>
+                  <Button onClick={handleCreateGroup} className="bg-green-600 text-white">Create</Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
           </TabsContent>
 
           <TabsContent value="help" className="space-y-6">

@@ -2,7 +2,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "@/hooks/useAuth";
 import { ThemeProvider } from "@/hooks/useTheme";
 import FloatingQAButton from "./components/FloatingQAButton";
@@ -21,6 +21,14 @@ import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
 
+// ProtectedRoute component for RBAC
+function ProtectedRoute({ children, requiredRole }: { children: JSX.Element, requiredRole: string }) {
+  const { role, loading } = useAuth();
+  if (loading) return null;
+  if (role !== requiredRole) return <Navigate to="/" replace />;
+  return children;
+}
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <ThemeProvider>
@@ -32,15 +40,22 @@ const App = () => (
             <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/auth" element={<Auth />} />
-                             <Route path="/dashboard" element={<Dashboard />} />
-               <Route path="/settings" element={<Settings />} />
-               <Route path="/collaboration" element={<Collaboration />} />
-               
-                               <Route path="/ai-qa" element={<AIQA />} />
-                <Route path="/real-time-courses" element={<RealTimeCourses />} />
-                <Route path="/my-learning" element={<MyLearning />} />
-                <Route path="/student-auth" element={<StudentAuth />} />
-                <Route path="/lecturer-auth" element={<LecturerAuth />} />
+              <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/settings" element={<Settings />} />
+              <Route path="/collaboration" element={
+                <ProtectedRoute requiredRole="instructor">
+                  <Collaboration />
+                </ProtectedRoute>
+              } />
+              <Route path="/ai-qa" element={<AIQA />} />
+              <Route path="/real-time-courses" element={<RealTimeCourses />} />
+              <Route path="/my-learning" element={
+                <ProtectedRoute requiredRole="student">
+                  <MyLearning />
+                </ProtectedRoute>
+              } />
+              <Route path="/student-auth" element={<StudentAuth />} />
+              <Route path="/lecturer-auth" element={<LecturerAuth />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>
