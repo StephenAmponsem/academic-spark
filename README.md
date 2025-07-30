@@ -1,73 +1,84 @@
-# Welcome to your Lovable project
+# Academic Spark
 
-## Project info
+A modern, real-time, AI-powered academic platform for students and educators.
 
-**URL**: https://lovable.dev/projects/1c5bb7b9-1065-487d-a30b-5f90b41b2cd4
+---
 
-## How can I edit this code?
+## 🚀 Features
 
-There are several ways of editing your application.
+- **Real-Time Courses**: Browse and access courses from top providers worldwide.
+- **My Learning**: Enroll in courses, track your progress, and manage your learning journey.
+- **AI Q&A Assistant**: Get instant, intelligent answers to your academic questions using OpenAI.
+- **Live Dashboard**: See your learning stats, AI usage, and real-time updates.
+- **Secure Authentication**: Sign in with Google, GitHub, or email (via Supabase Auth).
+- **Responsive UI**: Built with React, Vite, shadcn/ui, and Tailwind CSS.
 
-**Use Lovable**
+---
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/1c5bb7b9-1065-487d-a30b-5f90b41b2cd4) and start prompting.
+## 🛠️ Tech Stack
 
-Changes made via Lovable will be committed automatically to this repo.
+- **Frontend**: React + Vite + TypeScript
+- **UI**: shadcn/ui, Tailwind CSS
+- **Backend/DB**: Supabase (Postgres, Auth, Realtime)
+- **AI**: OpenAI GPT-3.5/4 API
+- **State/Data**: React Query
 
-**Use your preferred IDE**
+---
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+## ⚡ Getting Started
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
-
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
+### 1. **Clone the Repository**
+```bash
+git clone https://github.com/your-username/academic-spark.git
+cd academic-spark
 ```
 
-**Edit a file directly in GitHub**
+### 2. **Install Dependencies**
+```bash
+npm install
+```
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+### 3. **Environment Variables**
+Copy `.env.example` to `.env` and fill in your Supabase and OpenAI keys:
+```env
+VITE_SUPABASE_URL=your_supabase_url
+VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
+VITE_OPENAI_API_KEY=your_openai_api_key
+```
 
-**Use GitHub Codespaces**
+### 4. **Supabase Database Setup**
+- Run the SQL in `database_setup.sql` in your Supabase SQL editor to create the required tables and policies.
+- See `README_DATABASE.md` for details.
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+### 5. **Start the App**
+```bash
+npm run dev
+```
+- Open [http://localhost:8080](http://localhost:8080) (or the port shown in your terminal).
 
-## What technologies are used for this project?
+---
 
-This project is built with:
+## ✨ Usage
+- **Browse Courses**: Go to "Courses" to explore and enroll in real-time courses.
+- **My Learning**: View and manage your enrolled courses.
+- **AI Q&A**: Ask academic questions and get instant AI-powered answers.
+- **Dashboard**: See your stats and quick actions.
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+---
 
-## How can I deploy this project?
+## 🧑‍💻 Contributing
+Pull requests are welcome! For major changes, please open an issue first to discuss what you would like to change.
 
-Simply open [Lovable](https://lovable.dev/projects/1c5bb7b9-1065-487d-a30b-5f90b41b2cd4) and click on Share -> Publish.
+---
 
-## Can I connect a custom domain to my Lovable project?
+## 📄 License
+MIT
 
-Yes, you can!
+---
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+## 🙏 Acknowledgements
+- [Supabase](https://supabase.com/)
+- [OpenAI](https://openai.com/)
+- [shadcn/ui](https://ui.shadcn.com/)
+- [Vite](https://vitejs.dev/)
+- [Tailwind CSS](https://tailwindcss.com/)
