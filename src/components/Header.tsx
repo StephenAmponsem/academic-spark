@@ -4,14 +4,18 @@ import { useNavigate } from "react-router-dom";
 import { LogOut, User, MessageCircle } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { NotificationCenter } from "./NotificationCenter";
+import { supabase } from "@/integrations/supabase/client";
 
 const Header = () => {
-  const { user, signOut } = useAuth();
+  const { user, signOut, role } = useAuth();
   const navigate = useNavigate();
 
   const handleSignOut = async () => {
-    await signOut();
+    // Navigate immediately for better UX
     navigate('/');
+    
+    // Then handle the actual sign out
+    await signOut();
   };
 
   return (

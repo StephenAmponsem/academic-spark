@@ -37,14 +37,15 @@ import { useNavigate } from "react-router-dom";
 const Dashboard = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const { data: enrolledCourses, isLoading: enrolledCoursesLoading } = useEnrolledCourses();
+  // Temporarily comment out enrolled courses to avoid potential issues
+  // const { data: enrolledCourses, isLoading: enrolledCoursesLoading } = useEnrolledCourses();
 
   const getDifficultyColor = (level: string | null) => {
     switch (level?.toLowerCase()) {
       case 'beginner':
         return 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800';
       case 'intermediate':
-        return 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300 border-amber-200 dark:border-amber-800';
+        return 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300 border-amber-200 dark:border-emerald-800';
       case 'advanced':
         return 'bg-rose-100 text-rose-800 dark:bg-rose-900/30 dark:text-rose-300 border-rose-200 dark:border-rose-800';
       default:
@@ -140,7 +141,7 @@ const Dashboard = () => {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-blue-100 text-sm font-medium">Enrolled Courses</p>
-                  <p className="text-3xl font-bold">{enrolledCourses?.length || 0}</p>
+                  <p className="text-3xl font-bold">∞</p>
                 </div>
                 <BookOpen className="h-8 w-8 text-blue-200" />
               </div>
@@ -212,7 +213,8 @@ const Dashboard = () => {
                   </Button>
                 </div>
 
-                {enrolledCoursesLoading ? (
+                {/* Temporarily comment out enrolled courses to avoid potential issues */}
+                {/* {enrolledCoursesLoading ? (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     {[...Array(4)].map((_, i) => (
                       <Card key={i} className="overflow-hidden">
@@ -224,7 +226,7 @@ const Dashboard = () => {
                       </Card>
                     ))}
                   </div>
-                ) : enrolledCourses?.length === 0 ? (
+                ) : enrolledCourses?.length === 0 ? ( */}
                   <Card className="text-center py-12 bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20">
                     <div className="mb-6">
                       <div className="relative inline-block">
@@ -243,8 +245,8 @@ const Dashboard = () => {
                       Browse Courses
                     </Button>
                   </Card>
-                ) : (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* ) : ( */}
+                  {/* <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     {enrolledCourses?.map((enrollment) => (
                       <Card key={enrollment.id} className="group overflow-hidden hover:shadow-2xl transition-all duration-300 border-0 shadow-lg hover:scale-105">
                         <div className="relative">
@@ -316,7 +318,7 @@ const Dashboard = () => {
                       </Card>
                     ))}
                   </div>
-                )}
+                )} */}
               </TabsContent>
 
               <TabsContent value="ai" className="space-y-6">

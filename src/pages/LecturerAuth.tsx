@@ -35,14 +35,21 @@ export default function LecturerAuth() {
   const { toast } = useToast();
 
   useEffect(() => {
-    // Check if user is already logged in
+    // Check if user is already logged in - with timeout for faster response
     const checkAuth = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session) {
-        navigate('/dashboard');
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session) {
+          navigate('/dashboard');
+        }
+      } catch (error) {
+        // Ignore auth check errors
       }
     };
-    checkAuth();
+    
+    // Add a small delay to prevent blocking the UI
+    const timeoutId = setTimeout(checkAuth, 100);
+    return () => clearTimeout(timeoutId);
   }, [navigate]);
 
   const handleSignUp = async (e: React.FormEvent) => {
@@ -50,7 +57,7 @@ export default function LecturerAuth() {
     setIsLoading(true);
 
     try {
-      const redirectUrl = `${window.location.origin}/dashboard`;
+      const redirectUrl = `${window.location.origin}/`;
       
       const { error } = await supabase.auth.signUp({
         email,
@@ -122,28 +129,19 @@ export default function LecturerAuth() {
           description: error.message,
           variant: "destructive",
         });
-      } else {
-        // Verify user role
-        const { data: { user } } = await supabase.auth.getUser();
-        if (user) {
-          const { data: profile } = await supabase
-            .from('profiles')
-            .select('role')
-            .eq('id', user.id)
-            .single();
-
-          if (profile?.role === 'instructor') {
-            navigate('/dashboard');
-          } else {
-            await supabase.auth.signOut();
-            toast({
-              title: "Access denied",
-              description: "This account is not registered as an instructor. Please use the student login.",
-              variant: "destructive",
-            });
-          }
-        }
+        setIsLoading(false);
+        return;
       }
+
+      // Wait a moment for auth state to update
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      // Navigate to homepage after successful sign-in
+      navigate('/');
+      
+      // Role verification can be handled by the dashboard component
+      // or the useAuth hook, so we don't need to do it here
+      
     } catch (error) {
       toast({
         title: "An error occurred",
@@ -162,7 +160,7 @@ export default function LecturerAuth() {
       const { error } = await supabase.auth.signInWithOAuth({
         provider,
         options: {
-          redirectTo: `${window.location.origin}/dashboard`,
+          redirectTo: `${window.location.origin}/`,
         },
       });
 

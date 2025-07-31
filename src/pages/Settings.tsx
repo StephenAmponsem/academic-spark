@@ -45,8 +45,8 @@ const Settings = () => {
   const [activeTab, setActiveTab] = useState('account');
 
   const handleSignOut = async () => {
-    await signOut();
     navigate('/');
+    await signOut();
   };
 
   const handleSettingChange = async (key: string, value: any) => {
