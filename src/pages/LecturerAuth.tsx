@@ -84,24 +84,16 @@ export default function LecturerAuth() {
             variant: "destructive",
           });
         }
-      } else {
-        // Create instructor profile
-        const { data: { user } } = await supabase.auth.getUser();
-        if (user) {
-          await supabase.from('profiles').insert({
-            id: user.id,
-            full_name: fullName,
-            role: 'instructor',
-            avatar_url: null,
-            bio: null,
-          });
-        }
-
-        toast({
-          title: "Check your email",
-          description: "We've sent you a confirmation link to complete your instructor registration.",
-        });
+        setIsLoading(false);
+        return;
       }
+
+      // Profile creation is now handled by the database trigger
+      toast({
+        title: "Check your email",
+        description: "We've sent you a confirmation link. Please check your email to complete your registration.",
+      });
+      
     } catch (error) {
       toast({
         title: "An error occurred",

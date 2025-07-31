@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Database Connection Test</title>
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        button { margin: 10px; padding: 10px 20px; background: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; }
+        button:hover { background: #0056b3; }
+        .error { color: red; }
+        .success { color: green; }
+        pre { background: #f8f9fa; padding: 10px; border-radius: 5px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <h1>Database Connection Test</h1>
+    <div id="status">Ready to test...</div>
+    <button onclick="testConnection()">Test Connection</button>
+    <button onclick="testSignUp()">Test Sign Up</button>
+    <button onclick="testProfileCreation()">Test Profile Creation</button>
+    <button onclick="checkTables()">Check Tables</button>
+    <div id="results"></div>
+
+    <script>
+        const SUPABASE_URL = "https://nhuxwgmafdjchljvqlna.supabase.co";
+        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5odXh3Z21hZmRqY2hsanZxbG5hIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM0MDI5MDMsImV4cCI6MjA2ODk3ODkwM30.snzV6ynuEOY2HETjoxzKyfMzSl_pE9UW6jIDydsoSe4";
+
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        function updateStatus(message, isError = false) {
+            const statusDiv = document.getElementById('status');
+            statusDiv.textContent = message;
+            statusDiv.className = isError ? 'error' : 'success';
+        }
+
+        function updateResults(data) {
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = '<pre>' + JSON.stringify(data, null, 2) + '</pre>';
+        }
+
+        async function testConnection() {
+            try {
+                updateStatus('Testing connection...');
+                
+                // Test basic connection
+                const { data, error } = await supabase.from('profiles').select('count').limit(1);
+                
+                if (error) {
+                    updateStatus('Connection failed: ' + error.message, true);
+                    updateResults(error);
+                } else {
+                    updateStatus('Connection successful!');
+                    updateResults({ message: 'Database is accessible', data });
+                }
+            } catch (error) {
+                updateStatus('Connection failed: ' + error.message, true);
+                updateResults(error);
+            }
+        }
+
+        async function testSignUp() {
+            try {
+                updateStatus('Testing sign up...');
+                
+                const testEmail = 'test-' + Date.now() + '@example.com';
+                const testPassword = 'testpassword123';
+                
+                const { data, error } = await supabase.auth.signUp({
+                    email: testEmail,
+                    password: testPassword,
+                    options: {
+                        data: {
+                            full_name: 'Test User',
+                            role: 'student',
+                        },
+                    },
+                });
+                
+                if (error) {
+                    updateStatus('Sign up failed: ' + error.message, true);
+                    updateResults(error);
+                } else {
+                    updateStatus('Sign up successful! Check your email.');
+                    updateResults(data);
+                }
+            } catch (error) {
+                updateStatus('Sign up failed: ' + error.message, true);
+                updateResults(error);
+            }
+        }
+
+        async function testProfileCreation() {
+            try {
+                updateStatus('Testing profile creation...');
+                
+                // Try to insert a test profile
+                const { data, error } = await supabase.from('profiles').insert({
+                    id: '00000000-0000-0000-0000-000000000000',
+                    full_name: 'Test Profile',
+                    role: 'student'
+                }).select();
+                
+                if (error) {
+                    updateStatus('Profile creation failed: ' + error.message, true);
+                    updateResults(error);
+                } else {
+                    updateStatus('Profile creation successful!');
+                    updateResults(data);
+                }
+            } catch (error) {
+                updateStatus('Profile creation failed: ' + error.message, true);
+                updateResults(error);
+            }
+        }
+
+        async function checkTables() {
+            try {
+                updateStatus('Checking tables...');
+                
+                // Check if profiles table exists
+                const { data: profilesData, error: profilesError } = await supabase
+                    .from('profiles')
+                    .select('*')
+                    .limit(1);
+                
+                // Check if user_settings table exists
+                const { data: settingsData, error: settingsError } = await supabase
+                    .from('user_settings')
+                    .select('*')
+                    .limit(1);
+                
+                // Check if external_courses table exists
+                const { data: coursesData, error: coursesError } = await supabase
+                    .from('external_courses')
+                    .select('*')
+                    .limit(1);
+                
+                const results = {
+                    profiles: {
+                        exists: !profilesError,
+                        error: profilesError?.message,
+                        data: profilesData
+                    },
+                    user_settings: {
+                        exists: !settingsError,
+                        error: settingsError?.message,
+                        data: settingsData
+                    },
+                    external_courses: {
+                        exists: !coursesError,
+                        error: coursesError?.message,
+                        data: coursesData
+                    }
+                };
+                
+                const allTablesExist = results.profiles.exists && results.user_settings.exists && results.external_courses.exists;
+                
+                if (allTablesExist) {
+                    updateStatus('All tables exist and are accessible!');
+                } else {
+                    updateStatus('Some tables are missing or inaccessible', true);
+                }
+                
+                updateResults(results);
+            } catch (error) {
+                updateStatus('Table check failed: ' + error.message, true);
+                updateResults(error);
+            }
+        }
+    </script>
+</body>
+</html> 

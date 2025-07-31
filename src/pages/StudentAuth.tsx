@@ -84,24 +84,16 @@ export default function StudentAuth() {
             variant: "destructive",
           });
         }
-      } else {
-        // Create student profile
-        const { data: { user } } = await supabase.auth.getUser();
-        if (user) {
-          await supabase.from('profiles').insert({
-            id: user.id,
-            full_name: fullName,
-            role: 'student',
-            avatar_url: null,
-            bio: null,
-          });
-        }
-
-        toast({
-          title: "Check your email",
-          description: "We've sent you a confirmation link to complete your student registration.",
-        });
+        setIsLoading(false);
+        return;
       }
+
+      // Profile creation is now handled by the database trigger
+      toast({
+        title: "Check your email",
+        description: "We've sent you a confirmation link. Please check your email to complete your registration.",
+      });
+      
     } catch (error) {
       toast({
         title: "An error occurred",
