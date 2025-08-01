@@ -1,23 +1,66 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Separator } from '@/components/ui/separator';
+import { useToast } from '@/hooks/use-toast';
 import { 
   BookOpen, 
+  Users, 
   Clock, 
   Star, 
-  ArrowLeft, 
-  Trash2, 
-  ExternalLink,
-  Users,
+  TrendingUp, 
+  MessageCircle, 
+  Video, 
+  Headphones,
+  PenTool,
+  Code,
+  Calculator,
   Globe,
-  AlertTriangle,
-  Plus,
-  Sparkles
+  Microscope,
+  Palette,
+  Music,
+  Camera,
+  Gamepad2,
+  Dumbbell,
+  Heart,
+  Leaf,
+  Car,
+  Plane,
+  Ship,
+  Train,
+  Bus,
+  Bike,
+  Volume,
+  Volume1,
+  Volume2,
+  VolumeX,
+  Mic,
+  MicOff,
+  VideoOff,
+  Monitor,
+  Smartphone,
+  Tablet,
+  Laptop,
+  Server,
+  Database,
+  Cloud,
+  Wifi,
+  Bluetooth,
+  Usb,
+  Antenna,
+  Satellite,
+  Radar,
+  Sparkles,
+  ArrowLeft,
+  Plus
 } from 'lucide-react';
-import { useAuth } from '@/hooks/useAuth';
+import useAuth from '@/hooks/useAuth';
 import {
   AlertDialog,
   AlertDialogAction,

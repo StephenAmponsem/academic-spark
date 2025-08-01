@@ -22,8 +22,8 @@ import {
   Book,
   GraduationCap
 } from 'lucide-react';
+import useAuth from '@/hooks/useAuth';
 import { useAIChat } from '@/hooks/useAIChat';
-import { useAuth } from '@/hooks/useAuth';
 import { Message } from '@/integrations/supabase/types';
 import { formatDistanceToNow } from 'date-fns';
 import { cn } from '@/lib/utils';

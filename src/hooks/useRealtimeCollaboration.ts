@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { realtimeService, RealtimeMessage, UserPresence, StudyGroupUpdate, HelpRequestUpdate, VideoCall, VoiceCall } from '@/services/realtimeService';
-import { useAuth } from './useAuth';
+import useAuth from './useAuth';
 import { toast } from 'sonner';
 
 export const useRealtimeMessages = (conversationId: string | null) => {

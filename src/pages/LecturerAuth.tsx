@@ -6,11 +6,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
 import { 
-  Github, 
-  Mail, 
   ArrowLeft, 
   Eye, 
   EyeOff, 
@@ -20,8 +17,7 @@ import {
   BookOpen, 
   Sparkles,
   CheckCircle,
-  Award,
-  Users
+  Award
 } from 'lucide-react';
 
 export default function LecturerAuth() {
@@ -35,7 +31,7 @@ export default function LecturerAuth() {
   const { toast } = useToast();
 
   useEffect(() => {
-    // Check if user is already logged in - with timeout for faster response
+    // Quick auth check with timeout for faster response
     const checkAuth = async () => {
       try {
         const { data: { session } } = await supabase.auth.getSession();
@@ -43,12 +39,12 @@ export default function LecturerAuth() {
           navigate('/dashboard');
         }
       } catch (error) {
-        // Ignore auth check errors
+        // Ignore auth check errors for faster loading
       }
     };
     
-    // Add a small delay to prevent blocking the UI
-    const timeoutId = setTimeout(checkAuth, 100);
+    // Add minimal delay to prevent blocking UI
+    const timeoutId = setTimeout(checkAuth, 50);
     return () => clearTimeout(timeoutId);
   }, [navigate]);
 
@@ -125,44 +121,9 @@ export default function LecturerAuth() {
         return;
       }
 
-      // Wait a moment for auth state to update
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
-      // Navigate to homepage after successful sign-in
+      // Navigate immediately after successful sign-in
       navigate('/');
       
-      // Role verification can be handled by the dashboard component
-      // or the useAuth hook, so we don't need to do it here
-      
-    } catch (error) {
-      toast({
-        title: "An error occurred",
-        description: "Please try again later.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleSocialLogin = async (provider: 'google' | 'github') => {
-    setIsLoading(true);
-
-    try {
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider,
-        options: {
-          redirectTo: `${window.location.origin}/`,
-        },
-      });
-
-      if (error) {
-        toast({
-          title: "Social login failed",
-          description: error.message,
-          variant: "destructive",
-        });
-      }
     } catch (error) {
       toast({
         title: "An error occurred",
@@ -200,7 +161,7 @@ export default function LecturerAuth() {
               <BookOpen className="h-8 w-8 text-white" />
             </div>
             <h1 className="text-3xl font-bold bg-gradient-to-r from-green-600 to-blue-600 bg-clip-text text-transparent">
-              Instructor Portal
+              EDUConnect Instructor Portal
             </h1>
             <p className="text-muted-foreground mt-2">
               Create, teach, and inspire the next generation
@@ -392,47 +353,6 @@ export default function LecturerAuth() {
                   </form>
                 </TabsContent>
               </Tabs>
-
-              {/* Social Login Section */}
-              <div className="space-y-4">
-                <div className="relative">
-                  <div className="absolute inset-0 flex items-center">
-                    <Separator className="w-full" />
-                  </div>
-                  <div className="relative flex justify-center text-xs uppercase">
-                    <span className="bg-white dark:bg-gray-900 px-3 text-muted-foreground font-medium">
-                      Or continue with
-                    </span>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-3">
-                  <Button
-                    variant="outline"
-                    onClick={() => handleSocialLogin('google')}
-                    disabled={isLoading}
-                    className="h-11 border-muted-foreground/20 hover:bg-muted/50 transition-colors"
-                  >
-                    <Mail className="mr-2 h-4 w-4" />
-                    Google
-                  </Button>
-                  <Button
-                    variant="outline"
-                    onClick={() => handleSocialLogin('github')}
-                    disabled={isLoading}
-                    className="h-11 border-muted-foreground/20 hover:bg-muted/50 transition-colors"
-                  >
-                    <Github className="mr-2 h-4 w-4" />
-                    GitHub
-                  </Button>
-                </div>
-                
-                <div className="text-center">
-                  <p className="text-xs text-muted-foreground">
-                    Sign in with your social account or use email and password
-                  </p>
-                </div>
-              </div>
 
               {/* Instructor Benefits */}
               <div className="bg-gradient-to-r from-green-50 to-blue-50 dark:from-green-900/20 dark:to-blue-900/20 rounded-lg p-4 space-y-3">

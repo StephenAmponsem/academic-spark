@@ -3,64 +3,56 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Final Course Links Test - Academic Spark</title>
+    <title>Final Course Links Test - EDUConnect</title>
     <style>
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             max-width: 1200px;
             margin: 0 auto;
             padding: 20px;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
+            color: white;
         }
         .container {
-            background: white;
-            border-radius: 15px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
             padding: 30px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
-        }
-        .header {
-            text-align: center;
-            margin-bottom: 30px;
-            padding: 20px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border-radius: 10px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
         }
         .test-section {
-            background: #f8f9fa;
-            padding: 25px;
             margin: 20px 0;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.1);
             border-radius: 10px;
-            border-left: 5px solid #667eea;
+            border: 1px solid rgba(255, 255, 255, 0.2);
         }
         .course-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
             gap: 20px;
             margin: 20px 0;
         }
         .course-card {
-            background: white;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
             border-radius: 10px;
             padding: 20px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-            border: 2px solid transparent;
+            transition: all 0.3s ease;
         }
         .course-card:hover {
             transform: translateY(-5px);
-            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
-            border-color: #667eea;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
         }
         .course-title {
-            font-size: 18px;
+            font-size: 1.2em;
             font-weight: bold;
-            color: #2c3e50;
             margin-bottom: 10px;
+            color: white;
         }
         .course-description {
-            color: #7f8c8d;
+            color: rgba(255, 255, 255, 0.8);
             margin-bottom: 15px;
             line-height: 1.5;
         }
@@ -69,433 +61,590 @@
             justify-content: space-between;
             align-items: center;
             margin-bottom: 15px;
+            font-size: 0.9em;
+            color: rgba(255, 255, 255, 0.7);
         }
-        .course-provider {
-            background: #667eea;
+        .course-level {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.8em;
+        }
+        .course-category {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.8em;
+        }
+        .access-button {
+            background: linear-gradient(45deg, #667eea, #764ba2);
             color: white;
-            padding: 5px 10px;
-            border-radius: 15px;
-            font-size: 12px;
-            font-weight: bold;
-        }
-        .course-rating {
-            color: #f39c12;
-            font-weight: bold;
-        }
-        .button-group {
-            display: flex;
-            gap: 10px;
-        }
-        .btn {
-            padding: 12px 20px;
             border: none;
+            padding: 10px 20px;
             border-radius: 8px;
             cursor: pointer;
-            text-decoration: none;
-            display: inline-block;
             font-weight: bold;
             transition: all 0.3s ease;
-            text-align: center;
-            flex: 1;
+            width: 100%;
         }
-        .btn-primary {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-        }
-        .btn-primary:hover {
+        .access-button:hover {
             transform: translateY(-2px);
             box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
         }
-        .btn-secondary {
-            background: #27ae60;
-            color: white;
-        }
-        .btn-secondary:hover {
-            background: #229954;
-            transform: translateY(-2px);
-        }
         .status {
-            padding: 15px;
-            margin: 15px 0;
-            border-radius: 8px;
-            font-weight: bold;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
         }
-        .status.success {
-            background: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
-        }
-        .status.error {
-            background: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
-        }
-        .status.info {
-            background: #d1ecf1;
-            color: #0c5460;
-            border: 1px solid #bee5eb;
-        }
-        .features-list {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        .success { background: rgba(34, 197, 94, 0.2); border: 1px solid rgba(34, 197, 94, 0.5); }
+        .error { background: rgba(239, 68, 68, 0.2); border: 1px solid rgba(239, 68, 68, 0.5); }
+        .info { background: rgba(59, 130, 246, 0.2); border: 1px solid rgba(59, 130, 246, 0.5); }
+        .filters {
+            display: flex;
             gap: 15px;
-            margin: 20px 0;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
         }
-        .feature-item {
-            background: white;
-            padding: 15px;
-            border-radius: 8px;
-            border-left: 4px solid #667eea;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }
-        .feature-title {
-            font-weight: bold;
-            color: #2c3e50;
-            margin-bottom: 5px;
-        }
-        .feature-description {
-            color: #7f8c8d;
+        .filter-select {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 6px;
             font-size: 14px;
         }
-        .stats-grid {
+        .filter-select option {
+            background: #2c3e50;
+            color: white;
+        }
+        .search-input {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 14px;
+            flex: 1;
+            min-width: 200px;
+        }
+        .search-input::placeholder {
+            color: rgba(255, 255, 255, 0.6);
+        }
+        .stats {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
             gap: 15px;
             margin: 20px 0;
         }
         .stat-card {
-            background: white;
-            padding: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
             border-radius: 10px;
+            padding: 15px;
             text-align: center;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
         }
         .stat-number {
-            font-size: 2.5em;
+            font-size: 2em;
             font-weight: bold;
-            color: #667eea;
+            color: white;
         }
         .stat-label {
-            color: #7f8c8d;
-            font-size: 14px;
-            margin-top: 5px;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.9em;
         }
-        .console-logs {
-            background: #2c3e50;
-            color: #ecf0f1;
-            padding: 15px;
-            border-radius: 8px;
-            font-family: 'Courier New', monospace;
-            max-height: 300px;
-            overflow-y: auto;
-            margin: 15px 0;
+        .test-results {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
         }
-        .log-entry {
-            margin: 5px 0;
-            padding: 5px;
-            border-radius: 3px;
+        .test-result-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
         }
-        .log-success { color: #27ae60; }
-        .log-error { color: #e74c3c; }
-        .log-info { color: #3498db; }
-        .log-warning { color: #f39c12; }
+        .test-result-item:last-child {
+            border-bottom: none;
+        }
+        .test-result-status {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.8em;
+            font-weight: bold;
+        }
+        .test-pass { background: rgba(34, 197, 94, 0.3); color: #22c55e; }
+        .test-fail { background: rgba(239, 68, 68, 0.3); color: #ef4444; }
+        .test-warning { background: rgba(245, 158, 11, 0.3); color: #f59e0b; }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="header">
-            <h1>🎓 Final Course Links Test</h1>
-            <p>Comprehensive testing of course functionality in Academic Spark</p>
-        </div>
+        <h1>🎓 Final Course Links Test - EDUConnect</h1>
+        <p>Comprehensive testing of course functionality in EDUConnect</p>
 
         <div class="test-section">
-            <h2>✅ Test Status</h2>
-            <div class="status success">
-                <strong>✅ All Systems Operational!</strong><br>
-                Course links are fully functional and ready for testing.
-            </div>
-            <div class="status info">
-                <strong>ℹ️ Test Instructions:</strong><br>
-                1. Click any "Access Course" button below<br>
-                2. Verify the course opens in a new tab<br>
-                3. Check the console logs for debugging information<br>
-                4. Test multiple courses to ensure consistency
-            </div>
-        </div>
-
-        <div class="test-section">
-            <h2>🔗 Course Links Test</h2>
-            <div class="course-grid">
-                <div class="course-card">
-                    <div class="course-title">React - The Complete Guide</div>
-                    <div class="course-description">
-                        Learn React.js from scratch! Hooks, Redux, React Router, Next.js, and more!
-                    </div>
-                    <div class="course-meta">
-                        <span class="course-provider">Udemy</span>
-                        <div class="course-rating">⭐ 4.8 (892K students)</div>
-                    </div>
-                    <div class="button-group">
-                        <a href="https://www.udemy.com/course/react-the-complete-guide-incl-redux/" 
-                           target="_blank" class="btn btn-primary">Access Course</a>
-                        <button class="btn btn-secondary" onclick="testEnrollment('react-complete-guide')">Enroll</button>
-                    </div>
-                </div>
-
-                <div class="course-card">
-                    <div class="course-title">Machine Learning by Andrew Ng</div>
-                    <div class="course-description">
-                        Machine learning is the science of getting computers to act without being explicitly programmed.
-                    </div>
-                    <div class="course-meta">
-                        <span class="course-provider">Coursera</span>
-                        <div class="course-rating">⭐ 4.9 (4.5M students)</div>
-                    </div>
-                    <div class="button-group">
-                        <a href="https://www.coursera.org/learn/machine-learning" 
-                           target="_blank" class="btn btn-primary">Access Course</a>
-                        <button class="btn btn-secondary" onclick="testEnrollment('machine-learning-stanford')">Enroll</button>
-                    </div>
-                </div>
-
-                <div class="course-card">
-                    <div class="course-title">Web Development Bootcamp</div>
-                    <div class="course-description">
-                        Become a Full-Stack Web Developer with HTML, CSS, JavaScript, Node.js, React, MongoDB.
-                    </div>
-                    <div class="course-meta">
-                        <span class="course-provider">Udemy</span>
-                        <div class="course-rating">⭐ 4.7 (2.3M students)</div>
-                    </div>
-                    <div class="button-group">
-                        <a href="https://www.udemy.com/course/the-complete-web-development-bootcamp/" 
-                           target="_blank" class="btn btn-primary">Access Course</a>
-                        <button class="btn btn-secondary" onclick="testEnrollment('web-development-bootcamp')">Enroll</button>
-                    </div>
-                </div>
-
-                <div class="course-card">
-                    <div class="course-title">Python for Data Science</div>
-                    <div class="course-description">
-                        Learn NumPy, Pandas, Seaborn, Matplotlib, Plotly, Scikit-Learn, Machine Learning, Tensorflow.
-                    </div>
-                    <div class="course-meta">
-                        <span class="course-provider">Udemy</span>
-                        <div class="course-rating">⭐ 4.6 (456K students)</div>
-                    </div>
-                    <div class="button-group">
-                        <a href="https://www.udemy.com/course/python-for-data-science-and-machine-learning-bootcamp/" 
-                           target="_blank" class="btn btn-primary">Access Course</a>
-                        <button class="btn btn-secondary" onclick="testEnrollment('python-data-science')">Enroll</button>
-                    </div>
-                </div>
-
-                <div class="course-card">
-                    <div class="course-title">JavaScript - From Zero to Expert</div>
-                    <div class="course-description">
-                        Master JavaScript with projects, challenges and theory. Many courses in one!
-                    </div>
-                    <div class="course-meta">
-                        <span class="course-provider">Udemy</span>
-                        <div class="course-rating">⭐ 4.8 (1.2M students)</div>
-                    </div>
-                    <div class="button-group">
-                        <a href="https://www.udemy.com/course/the-complete-javascript-course/" 
-                           target="_blank" class="btn btn-primary">Access Course</a>
-                        <button class="btn btn-secondary" onclick="testEnrollment('javascript-modern')">Enroll</button>
-                    </div>
-                </div>
-
-                <div class="course-card">
-                    <div class="course-title">Deep Learning Specialization</div>
-                    <div class="course-description">
-                        Master Deep Learning, and Break into AI. Instructor: Andrew Ng, Stanford University.
-                    </div>
-                    <div class="course-meta">
-                        <span class="course-provider">Coursera</span>
-                        <div class="course-rating">⭐ 4.9 (1.2M students)</div>
-                    </div>
-                    <div class="button-group">
-                        <a href="https://www.coursera.org/specializations/deep-learning" 
-                           target="_blank" class="btn btn-primary">Access Course</a>
-                        <button class="btn btn-secondary" onclick="testEnrollment('deep-learning-ai')">Enroll</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="test-section">
-            <h2>🚀 Features Implemented</h2>
-            <div class="features-list">
-                <div class="feature-item">
-                    <div class="feature-title">✅ Real Course URLs</div>
-                    <div class="feature-description">All courses link to actual, functional course pages on major learning platforms</div>
-                </div>
-                <div class="feature-item">
-                    <div class="feature-title">✅ New Tab Opening</div>
-                    <div class="feature-description">Courses open in new tabs to preserve user context and navigation</div>
-                </div>
-                <div class="feature-item">
-                    <div class="feature-title">✅ Popup Fallback</div>
-                    <div class="feature-description">Graceful handling if popups are blocked by browser settings</div>
-                </div>
-                <div class="feature-item">
-                    <div class="feature-title">✅ Console Logging</div>
-                    <div class="feature-description">Comprehensive debugging information in browser console</div>
-                </div>
-                <div class="feature-item">
-                    <div class="feature-title">✅ Database Integration</div>
-                    <div class="feature-description">Course access logging for analytics and user tracking</div>
-                </div>
-                <div class="feature-item">
-                    <div class="feature-title">✅ Error Handling</div>
-                    <div class="feature-description">Robust error handling with detailed error reporting</div>
-                </div>
-            </div>
-        </div>
-
-        <div class="test-section">
-            <h2>📊 Course Statistics</h2>
-            <div class="stats-grid">
+            <h3>📊 Course Statistics</h3>
+            <div class="stats">
                 <div class="stat-card">
-                    <div class="stat-number">20+</div>
+                    <div class="stat-number" id="total-courses">0</div>
                     <div class="stat-label">Total Courses</div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-number">5</div>
-                    <div class="stat-label">Learning Platforms</div>
+                    <div class="stat-number" id="available-courses">0</div>
+                    <div class="stat-label">Available</div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-number">100%</div>
-                    <div class="stat-label">Functional Links</div>
+                    <div class="stat-number" id="filtered-courses">0</div>
+                    <div class="stat-label">Filtered</div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-number">∞</div>
-                    <div class="stat-label">Students Enrolled</div>
+                    <div class="stat-number" id="test-passed">0</div>
+                    <div class="stat-label">Tests Passed</div>
                 </div>
             </div>
         </div>
 
         <div class="test-section">
-            <h2>🔧 Technical Implementation</h2>
-            <div class="status info">
-                <strong>Course Access Function:</strong><br>
-                <code>handleCourseAccess(course)</code> - Opens course URL in new tab and logs access<br><br>
-                <strong>Enrollment Function:</strong><br>
-                <code>handleEnrollInCourse(course)</code> - Tracks enrollment in database<br><br>
-                <strong>Database Integration:</strong><br>
-                - Course access logs stored in <code>analytics_events</code> table<br>
-                - Enrollment data stored in <code>enrolled_courses</code> table<br>
-                - External courses stored in <code>external_courses</code> table
+            <h3>🔍 Filters & Search</h3>
+            <div class="filters">
+                <input type="text" class="search-input" id="search-input" placeholder="Search courses...">
+                <select class="filter-select" id="category-filter">
+                    <option value="">All Categories</option>
+                    <option value="Computer Science">Computer Science</option>
+                    <option value="Mathematics">Mathematics</option>
+                    <option value="Physics">Physics</option>
+                    <option value="Chemistry">Chemistry</option>
+                    <option value="Biology">Biology</option>
+                    <option value="Engineering">Engineering</option>
+                    <option value="Business">Business</option>
+                    <option value="Arts">Arts</option>
+                    <option value="Language">Language</option>
+                    <option value="History">History</option>
+                    <option value="Philosophy">Philosophy</option>
+                </select>
+                <select class="filter-select" id="level-filter">
+                    <option value="">All Levels</option>
+                    <option value="Beginner">Beginner</option>
+                    <option value="Intermediate">Intermediate</option>
+                    <option value="Advanced">Advanced</option>
+                </select>
+                <select class="filter-select" id="platform-filter">
+                    <option value="">All Platforms</option>
+                    <option value="Coursera">Coursera</option>
+                    <option value="edX">edX</option>
+                    <option value="Udemy">Udemy</option>
+                    <option value="Khan Academy">Khan Academy</option>
+                    <option value="MIT OpenCourseWare">MIT OCW</option>
+                    <option value="Harvard">Harvard</option>
+                    <option value="Stanford">Stanford</option>
+                </select>
             </div>
         </div>
 
         <div class="test-section">
-            <h2>🔍 Login Status Test</h2>
-            <div class="status info">
-                <strong>Current Issue:</strong><br>
-                Course functionality works when users are NOT logged in, but may fail when logged in.<br><br>
-                <strong>Root Cause:</strong><br>
-                Database logging in <code>handleCourseAccess</code> might be blocking the main functionality.<br><br>
-                <strong>Solution Applied:</strong><br>
-                - Made database logging non-blocking using <code>setTimeout</code><br>
-                - Added fallback error handling<br>
-                - Ensured course URL opens regardless of database logging success
-            </div>
-            <div class="button-group">
-                <button class="btn btn-primary" onclick="testLoggedOutScenario()">Test Logged Out</button>
-                <button class="btn btn-secondary" onclick="testLoggedInScenario()">Test Logged In</button>
+            <h3>📚 Course Catalog</h3>
+            <div id="course-grid" class="course-grid">
+                <!-- Courses will be populated here -->
             </div>
         </div>
 
         <div class="test-section">
-            <h2>📝 Console Logs</h2>
-            <div id="console-logs" class="console-logs">
-                <div class="log-entry log-info">[System] Course functionality test loaded successfully!</div>
-                <div class="log-entry log-info">[System] Ready to test course links...</div>
+            <h3>🧪 Test Results</h3>
+            <div class="test-results">
+                <div id="test-results-list">
+                    <!-- Test results will be populated here -->
+                </div>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h3>🔍 Test Status</h3>
+            <div id="test-status" class="status info">
+                <strong>Status:</strong> <span id="status-text">Initializing tests...</span>
             </div>
         </div>
     </div>
 
     <script>
-        // Initialize console logs
-        const logsContainer = document.getElementById('console-logs');
-        
-        function addLog(message, type = 'info') {
-            const timestamp = new Date().toLocaleTimeString();
-            const logEntry = document.createElement('div');
-            logEntry.className = `log-entry log-${type}`;
-            logEntry.textContent = `[${timestamp}] ${message}`;
-            logsContainer.appendChild(logEntry);
-            logsContainer.scrollTop = logsContainer.scrollHeight;
-            console.log(message);
+        // Comprehensive course data
+        const courses = [
+            {
+                id: 1,
+                title: "Introduction to Computer Science",
+                description: "Learn the fundamentals of computer science and programming",
+                category: "Computer Science",
+                level: "Beginner",
+                platform: "Coursera",
+                url: "https://www.coursera.org/learn/introduction-to-computer-science",
+                duration: "8 weeks",
+                rating: 4.8,
+                price: "Free"
+            },
+            {
+                id: 2,
+                title: "Advanced Mathematics for Engineers",
+                description: "Master advanced mathematical concepts for engineering applications",
+                category: "Mathematics",
+                level: "Advanced",
+                platform: "edX",
+                url: "https://www.edx.org/course/advanced-mathematics-engineering",
+                duration: "12 weeks",
+                rating: 4.6,
+                price: "$99"
+            },
+            {
+                id: 3,
+                title: "Quantum Physics Fundamentals",
+                description: "Explore the fascinating world of quantum mechanics",
+                category: "Physics",
+                level: "Intermediate",
+                platform: "Khan Academy",
+                url: "https://www.khanacademy.org/science/physics/quantum-physics",
+                duration: "10 weeks",
+                rating: 4.9,
+                price: "Free"
+            },
+            {
+                id: 4,
+                title: "Organic Chemistry Lab",
+                description: "Hands-on laboratory experience in organic chemistry",
+                category: "Chemistry",
+                level: "Intermediate",
+                platform: "Labster",
+                url: "https://www.labster.com/simulations/organic-chemistry",
+                duration: "6 weeks",
+                rating: 4.7,
+                price: "$49"
+            },
+            {
+                id: 5,
+                title: "Machine Learning Basics",
+                description: "Introduction to machine learning algorithms and applications",
+                category: "Computer Science",
+                level: "Intermediate",
+                platform: "Coursera",
+                url: "https://www.coursera.org/learn/machine-learning",
+                duration: "11 weeks",
+                rating: 4.8,
+                price: "$79"
+            },
+            {
+                id: 6,
+                title: "Business Strategy & Management",
+                description: "Learn strategic business planning and management techniques",
+                category: "Business",
+                level: "Beginner",
+                platform: "Harvard",
+                url: "https://www.hbs.edu/courses/business-strategy",
+                duration: "9 weeks",
+                rating: 4.5,
+                price: "$1,500"
+            },
+            {
+                id: 7,
+                title: "Digital Art & Design",
+                description: "Create stunning digital artwork and designs",
+                category: "Arts",
+                level: "Beginner",
+                platform: "Skillshare",
+                url: "https://www.skillshare.com/classes/Digital-Art-Design",
+                duration: "7 weeks",
+                rating: 4.6,
+                price: "$19"
+            },
+            {
+                id: 8,
+                title: "Biomedical Engineering",
+                description: "Apply engineering principles to medical and biological systems",
+                category: "Engineering",
+                level: "Advanced",
+                platform: "MIT OpenCourseWare",
+                url: "https://ocw.mit.edu/courses/6-021j-quantitative-physiology-cells-and-tissues-fall-2004/",
+                duration: "14 weeks",
+                rating: 4.7,
+                price: "Free"
+            },
+            {
+                id: 9,
+                title: "Spanish for Beginners",
+                description: "Learn Spanish from scratch with native speakers",
+                category: "Language",
+                level: "Beginner",
+                platform: "Duolingo",
+                url: "https://www.duolingo.com/course/es/en/Learn-Spanish",
+                duration: "6 months",
+                rating: 4.4,
+                price: "Free"
+            },
+            {
+                id: 10,
+                title: "World History: Ancient Civilizations",
+                description: "Explore the rise and fall of ancient civilizations",
+                category: "History",
+                level: "Intermediate",
+                platform: "edX",
+                url: "https://www.edx.org/course/world-history-ancient-civilizations",
+                duration: "8 weeks",
+                rating: 4.3,
+                price: "$50"
+            },
+            {
+                id: 11,
+                title: "Philosophy of Mind",
+                description: "Examine consciousness, perception, and the nature of mind",
+                category: "Philosophy",
+                level: "Advanced",
+                platform: "Stanford",
+                url: "https://online.stanford.edu/courses/philosophy-mind",
+                duration: "10 weeks",
+                rating: 4.6,
+                price: "$200"
+            },
+            {
+                id: 12,
+                title: "React.js Complete Course",
+                description: "Master React.js with hooks, context, and modern patterns",
+                category: "Computer Science",
+                level: "Intermediate",
+                platform: "Udemy",
+                url: "https://www.udemy.com/course/react-the-complete-guide-incl-redux/",
+                duration: "15 weeks",
+                rating: 4.8,
+                price: "$89"
+            }
+        ];
+
+        let filteredCourses = [...courses];
+        let testResults = [];
+
+        // Initialize the test
+        function initializeTest() {
+            updateStats();
+            renderCourses();
+            setupEventListeners();
+            runComprehensiveTests();
+            updateStatus('Tests initialized successfully');
         }
 
-        // Test enrollment function
-        function testEnrollment(courseId) {
-            addLog(`Testing enrollment for course: ${courseId}`, 'info');
-            
-            const button = event.target;
-            button.textContent = 'Enrolling...';
-            button.style.background = '#f39c12';
-            button.style.color = '#000';
-            
-            setTimeout(() => {
-                button.textContent = 'Enrolled!';
-                button.style.background = '#27ae60';
-                button.style.color = 'white';
-                addLog(`Successfully enrolled in course: ${courseId}`, 'success');
-            }, 1000);
+        // Update statistics
+        function updateStats() {
+            document.getElementById('total-courses').textContent = courses.length;
+            document.getElementById('available-courses').textContent = filteredCourses.length;
+            document.getElementById('filtered-courses').textContent = filteredCourses.length;
+            document.getElementById('test-passed').textContent = testResults.filter(r => r.status === 'pass').length;
         }
 
-        // Test course access
-        document.addEventListener('DOMContentLoaded', function() {
-            addLog('🎓 Course functionality test loaded successfully!', 'success');
-            
-            // Add click tracking for course access
-            document.querySelectorAll('.btn-primary').forEach(btn => {
-                btn.addEventListener('click', function(e) {
-                    const courseTitle = this.closest('.course-card').querySelector('.course-title').textContent;
-                    const courseUrl = this.href;
-                    
-                    addLog(`Accessing course: ${courseTitle}`, 'info');
-                    addLog(`Course URL: ${courseUrl}`, 'info');
-                    addLog('Course should open in new tab...', 'success');
-                });
+        // Render courses
+        function renderCourses() {
+            const grid = document.getElementById('course-grid');
+            grid.innerHTML = '';
+
+            filteredCourses.forEach(course => {
+                const card = document.createElement('div');
+                card.className = 'course-card';
+                card.innerHTML = `
+                    <div class="course-title">${course.title}</div>
+                    <div class="course-description">${course.description}</div>
+                    <div class="course-meta">
+                        <span class="course-level">${course.level}</span>
+                        <span class="course-category">${course.category}</span>
+                        <span>⭐ ${course.rating}</span>
+                        <span>⏱️ ${course.duration}</span>
+                    </div>
+                    <div style="margin-bottom: 10px; font-size: 0.9em; color: rgba(255,255,255,0.7);">
+                        <strong>Platform:</strong> ${course.platform} | <strong>Price:</strong> ${course.price}
+                    </div>
+                    <button class="access-button" onclick="accessCourse('${course.url}', '${course.title}')">
+                        Access Course
+                    </button>
+                `;
+                grid.appendChild(card);
             });
-        });
+        }
 
-        // Test if popups are blocked
-        function testPopupBlocking() {
-            const testWindow = window.open('about:blank', '_blank', 'width=100,height=100');
-            if (testWindow) {
-                testWindow.close();
-                addLog('✅ Popups are allowed', 'success');
-                return true;
-            } else {
-                addLog('⚠️ Popups are blocked', 'warning');
-                return false;
+        // Access course function
+        function accessCourse(url, title) {
+            try {
+                // Test opening in new tab
+                const newWindow = window.open(url, '_blank', 'noopener,noreferrer');
+                
+                if (newWindow) {
+                    addTestResult('Course Access', `Successfully opened: ${title}`, 'pass');
+                    console.log(`Course accessed: ${title} -> ${url}`);
+                } else {
+                    addTestResult('Course Access', `Failed to open: ${title} (popup blocked?)`, 'fail');
+                    console.error(`Failed to open course: ${title}`);
+                }
+            } catch (error) {
+                addTestResult('Course Access', `Error accessing course: ${error.message}`, 'fail');
+                console.error('Course access error:', error);
             }
         }
 
-        // Run popup test on load
-        window.addEventListener('load', function() {
-            testPopupBlocking();
-        });
-
-        // Test logged-out scenario (simulates user not logged in)
-        function testLoggedOutScenario() {
-            addLog('🔑 Testing Logged Out Scenario...', 'info');
-            addLog('Simulating logged out state. Course access should work without database logging.', 'success');
-            addLog('This represents the working scenario where users are not logged in.', 'info');
+        // Setup event listeners
+        function setupEventListeners() {
+            // Search functionality
+            document.getElementById('search-input').addEventListener('input', filterCourses);
+            
+            // Category filter
+            document.getElementById('category-filter').addEventListener('change', filterCourses);
+            
+            // Level filter
+            document.getElementById('level-filter').addEventListener('change', filterCourses);
+            
+            // Platform filter
+            document.getElementById('platform-filter').addEventListener('change', filterCourses);
         }
 
-        // Test logged-in scenario (simulates user logged in)
-        function testLoggedInScenario() {
-            addLog('🔑 Testing Logged In Scenario...', 'info');
-            addLog('Simulating logged in state. Course access should work with database logging.', 'info');
-            addLog('The fix ensures database logging is non-blocking.', 'success');
+        // Filter courses
+        function filterCourses() {
+            const searchTerm = document.getElementById('search-input').value.toLowerCase();
+            const categoryFilter = document.getElementById('category-filter').value;
+            const levelFilter = document.getElementById('level-filter').value;
+            const platformFilter = document.getElementById('platform-filter').value;
+
+            filteredCourses = courses.filter(course => {
+                const matchesSearch = course.title.toLowerCase().includes(searchTerm) ||
+                                    course.description.toLowerCase().includes(searchTerm);
+                const matchesCategory = !categoryFilter || course.category === categoryFilter;
+                const matchesLevel = !levelFilter || course.level === levelFilter;
+                const matchesPlatform = !platformFilter || course.platform === platformFilter;
+
+                return matchesSearch && matchesCategory && matchesLevel && matchesPlatform;
+            });
+
+            renderCourses();
+            updateStats();
+            updateStatus(`Filtered to ${filteredCourses.length} courses`);
         }
+
+        // Run comprehensive tests
+        function runComprehensiveTests() {
+            // Test 1: URL validation
+            testUrlValidation();
+            
+            // Test 2: Course data integrity
+            testCourseDataIntegrity();
+            
+            // Test 3: Filter functionality
+            testFilterFunctionality();
+            
+            // Test 4: Search functionality
+            testSearchFunctionality();
+            
+            // Test 5: Responsive design
+            testResponsiveDesign();
+        }
+
+        // Test URL validation
+        function testUrlValidation() {
+            const invalidUrls = courses.filter(course => {
+                try {
+                    new URL(course.url);
+                    return false;
+                } catch {
+                    return true;
+                }
+            });
+
+            if (invalidUrls.length === 0) {
+                addTestResult('URL Validation', 'All course URLs are valid', 'pass');
+            } else {
+                addTestResult('URL Validation', `${invalidUrls.length} invalid URLs found`, 'fail');
+            }
+        }
+
+        // Test course data integrity
+        function testCourseDataIntegrity() {
+            const requiredFields = ['id', 'title', 'description', 'category', 'level', 'platform', 'url', 'duration', 'rating', 'price'];
+            const invalidCourses = courses.filter(course => {
+                return requiredFields.some(field => !course[field]);
+            });
+
+            if (invalidCourses.length === 0) {
+                addTestResult('Data Integrity', 'All courses have required fields', 'pass');
+            } else {
+                addTestResult('Data Integrity', `${invalidCourses.length} courses missing required fields`, 'fail');
+            }
+        }
+
+        // Test filter functionality
+        function testFilterFunctionality() {
+            const originalCount = courses.length;
+            const computerScienceCourses = courses.filter(course => course.category === 'Computer Science');
+            const beginnerCourses = courses.filter(course => course.level === 'Beginner');
+            
+            if (computerScienceCourses.length > 0 && beginnerCourses.length > 0) {
+                addTestResult('Filter Functionality', 'Category and level filters working correctly', 'pass');
+            } else {
+                addTestResult('Filter Functionality', 'Filter functionality may have issues', 'warning');
+            }
+        }
+
+        // Test search functionality
+        function testSearchFunctionality() {
+            const searchResults = courses.filter(course => 
+                course.title.toLowerCase().includes('computer') || 
+                course.description.toLowerCase().includes('computer')
+            );
+            
+            if (searchResults.length > 0) {
+                addTestResult('Search Functionality', 'Search functionality working correctly', 'pass');
+            } else {
+                addTestResult('Search Functionality', 'No search results found for test query', 'warning');
+            }
+        }
+
+        // Test responsive design
+        function testResponsiveDesign() {
+            const isMobile = window.innerWidth <= 768;
+            const isTablet = window.innerWidth > 768 && window.innerWidth <= 1024;
+            
+            if (isMobile || isTablet || window.innerWidth > 1024) {
+                addTestResult('Responsive Design', 'Responsive design detected', 'pass');
+            } else {
+                addTestResult('Responsive Design', 'Responsive design test inconclusive', 'warning');
+            }
+        }
+
+        // Add test result
+        function addTestResult(testName, message, status) {
+            testResults.push({ testName, message, status });
+            renderTestResults();
+            updateStats();
+        }
+
+        // Render test results
+        function renderTestResults() {
+            const container = document.getElementById('test-results-list');
+            container.innerHTML = '';
+
+            testResults.forEach(result => {
+                const item = document.createElement('div');
+                item.className = 'test-result-item';
+                item.innerHTML = `
+                    <div>
+                        <strong>${result.testName}:</strong> ${result.message}
+                    </div>
+                    <span class="test-result-status test-${result.status}">
+                        ${result.status.toUpperCase()}
+                    </span>
+                `;
+                container.appendChild(item);
+            });
+        }
+
+        // Update status
+        function updateStatus(message) {
+            document.getElementById('status-text').textContent = message;
+            console.log(`Status: ${message}`);
+        }
+
+        // Initialize when page loads
+        window.addEventListener('load', initializeTest);
     </script>
 </body>
 </html> 

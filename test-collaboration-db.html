@@ -3,523 +3,666 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Collaboration Database Test - Academic Spark</title>
+    <title>Collaboration Database Test - EDUConnect</title>
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     <style>
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            max-width: 1000px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 1200px;
             margin: 0 auto;
             padding: 20px;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
+            color: white;
         }
         .container {
-            background: white;
-            border-radius: 15px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
             padding: 30px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
-        }
-        .header {
-            text-align: center;
-            margin-bottom: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
         }
         .test-section {
-            margin-bottom: 30px;
+            margin: 20px 0;
             padding: 20px;
-            border: 2px solid #e5e7eb;
+            background: rgba(255, 255, 255, 0.1);
             border-radius: 10px;
-            background: #f9fafb;
-        }
-        .test-section h3 {
-            margin-top: 0;
-            color: #374151;
-            border-bottom: 2px solid #e5e7eb;
-            padding-bottom: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
         }
         .status {
-            padding: 15px;
-            border-radius: 8px;
+            padding: 10px;
+            border-radius: 5px;
             margin: 10px 0;
-            font-weight: 500;
         }
-        .status.success {
-            background: #d1fae5;
-            color: #065f46;
-            border: 1px solid #10b981;
-        }
-        .status.error {
-            background: #fee2e2;
-            color: #991b1b;
-            border: 1px solid #ef4444;
-        }
-        .status.info {
-            background: #dbeafe;
-            color: #1e40af;
-            border: 1px solid #3b82f6;
-        }
-        .button-group {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-            margin: 15px 0;
-        }
-        .btn {
-            padding: 10px 20px;
+        .success { background: rgba(34, 197, 94, 0.2); border: 1px solid rgba(34, 197, 94, 0.5); }
+        .error { background: rgba(239, 68, 68, 0.2); border: 1px solid rgba(239, 68, 68, 0.5); }
+        .info { background: rgba(59, 130, 246, 0.2); border: 1px solid rgba(59, 130, 246, 0.5); }
+        .warning { background: rgba(245, 158, 11, 0.2); border: 1px solid rgba(245, 158, 11, 0.5); }
+        button {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
             border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: 500;
-            transition: all 0.2s;
-        }
-        .btn-primary {
-            background: #3b82f6;
-            color: white;
-        }
-        .btn-primary:hover {
-            background: #2563eb;
-        }
-        .btn-secondary {
-            background: #6b7280;
-            color: white;
-        }
-        .btn-secondary:hover {
-            background: #4b5563;
-        }
-        .btn-success {
-            background: #10b981;
-            color: white;
-        }
-        .btn-success:hover {
-            background: #059669;
-        }
-        .btn-danger {
-            background: #ef4444;
-            color: white;
-        }
-        .btn-danger:hover {
-            background: #dc2626;
-        }
-        .log-container {
-            background: #1f2937;
-            color: #f9fafb;
-            padding: 15px;
+            padding: 10px 20px;
             border-radius: 8px;
-            font-family: 'Courier New', monospace;
+            cursor: pointer;
+            margin: 5px;
             font-size: 14px;
+            transition: transform 0.2s;
+        }
+        button:hover {
+            transform: translateY(-2px);
+        }
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        .data-display {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            padding: 15px;
+            margin: 10px 0;
             max-height: 300px;
             overflow-y: auto;
-            margin-top: 15px;
         }
-        .log-entry {
-            margin-bottom: 5px;
-            padding: 2px 0;
+        .table-container {
+            overflow-x: auto;
+            margin: 10px 0;
         }
-        .log-entry.success { color: #10b981; }
-        .log-entry.error { color: #ef4444; }
-        .log-entry.info { color: #3b82f6; }
-        .log-entry.warning { color: #f59e0b; }
-        .table-test {
+        table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 15px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            overflow: hidden;
         }
-        .table-test th, .table-test td {
-            border: 1px solid #d1d5db;
-            padding: 8px 12px;
+        th, td {
+            padding: 12px;
             text-align: left;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
         }
-        .table-test th {
-            background: #f3f4f6;
-            font-weight: 600;
+        th {
+            background: rgba(255, 255, 255, 0.2);
+            font-weight: bold;
         }
-        .table-test tr:nth-child(even) {
-            background: #f9fafb;
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        .stat-card {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+        }
+        .stat-number {
+            font-size: 2em;
+            font-weight: bold;
+            color: white;
+        }
+        .stat-label {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.9em;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="header">
-            <h1>🔗 Collaboration Database Test</h1>
-            <p>Testing real-time collaboration features and database connectivity</p>
+        <h1>🤝 Collaboration Database Test - EDUConnect</h1>
+        <p>Testing real-time collaboration features and database connectivity</p>
+
+        <div class="test-section">
+            <h3>🔧 Database Connection</h3>
+            <div id="connection-status" class="status info">
+                <strong>Status:</strong> <span id="connection-text">Testing connection...</span>
+            </div>
+            <button onclick="testConnection()">Test Connection</button>
         </div>
 
         <div class="test-section">
-            <h3>🔧 Database Connection Test</h3>
-            <div class="status info">
-                <strong>Testing Supabase Connection:</strong><br>
-                This will verify if the database is accessible and collaboration tables exist.
+            <h3>📊 Database Statistics</h3>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-number" id="users-count">-</div>
+                    <div class="stat-label">Users</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="messages-count">-</div>
+                    <div class="stat-label">Messages</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="groups-count">-</div>
+                    <div class="stat-label">Study Groups</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="requests-count">-</div>
+                    <div class="stat-label">Help Requests</div>
+                </div>
             </div>
-            <div class="button-group">
-                <button class="btn btn-primary" onclick="testDatabaseConnection()">Test Database Connection</button>
-                <button class="btn btn-secondary" onclick="checkTables()">Check Collaboration Tables</button>
-                <button class="btn btn-success" onclick="testRealtimeFeatures()">Test Real-time Features</button>
-            </div>
-            <div id="db-log" class="log-container"></div>
         </div>
 
         <div class="test-section">
-            <h3>📨 Real-time Messaging Test</h3>
-            <div class="status info">
-                <strong>Testing Real-time Messaging:</strong><br>
-                This will test message sending, receiving, and real-time updates.
-            </div>
-            <div class="button-group">
-                <button class="btn btn-primary" onclick="testMessaging()">Test Messaging</button>
-                <button class="btn btn-secondary" onclick="testPresence()">Test Presence</button>
-                <button class="btn btn-success" onclick="testStudyGroups()">Test Study Groups</button>
-            </div>
-            <div id="messaging-log" class="log-container"></div>
+            <h3>👥 User Management</h3>
+            <button onclick="testUserCreation()">Test User Creation</button>
+            <button onclick="testUserRetrieval()">Test User Retrieval</button>
+            <button onclick="testUserUpdate()">Test User Update</button>
+            <div id="user-results" class="data-display" style="display: none;"></div>
         </div>
 
         <div class="test-section">
-            <h3>👥 Collaboration Features Test</h3>
-            <div class="status info">
-                <strong>Testing Collaboration Features:</strong><br>
-                This will test help requests, video calls, and other collaboration features.
-            </div>
-            <div class="button-group">
-                <button class="btn btn-primary" onclick="testHelpRequests()">Test Help Requests</button>
-                <button class="btn btn-secondary" onclick="testVideoCalls()">Test Video Calls</button>
-                <button class="btn btn-success" onclick="testVoiceCalls()">Test Voice Calls</button>
-            </div>
-            <div id="collaboration-log" class="log-container"></div>
+            <h3>💬 Messaging System</h3>
+            <button onclick="testMessageCreation()">Test Message Creation</button>
+            <button onclick="testMessageRetrieval()">Test Message Retrieval</button>
+            <button onclick="testRealTimeMessages()">Test Real-time Messages</button>
+            <div id="message-results" class="data-display" style="display: none;"></div>
         </div>
 
         <div class="test-section">
-            <h3>📊 Database Tables Status</h3>
-            <div id="tables-status">
-                <div class="status info">Click "Check Collaboration Tables" to see table status</div>
+            <h3>👥 Study Groups</h3>
+            <button onclick="testGroupCreation()">Test Group Creation</button>
+            <button onclick="testGroupRetrieval()">Test Group Retrieval</button>
+            <button onclick="testGroupMembership()">Test Group Membership</button>
+            <div id="group-results" class="data-display" style="display: none;"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>🆘 Help Requests</h3>
+            <button onclick="testHelpRequestCreation()">Test Help Request Creation</button>
+            <button onclick="testHelpRequestRetrieval()">Test Help Request Retrieval</button>
+            <button onclick="testHelpRequestResponse()">Test Help Request Response</button>
+            <div id="help-results" class="data-display" style="display: none;"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>📡 Real-time Features</h3>
+            <button onclick="testPresenceSystem()">Test Presence System</button>
+            <button onclick="testRealTimeUpdates()">Test Real-time Updates</button>
+            <button onclick="testNotifications()">Test Notifications</button>
+            <div id="realtime-results" class="data-display" style="display: none;"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>🔍 Test Results</h3>
+            <div id="test-results" class="status info">
+                <strong>Results:</strong> <span id="results-text">No tests run yet</span>
             </div>
         </div>
     </div>
 
     <script>
-        // Initialize Supabase client
-        const supabaseUrl = "https://nhuxwgmafdjchljvqlna.supabase.co";
-        const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5odXh3Z21hZmRqY2hsanZxbG5hIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM0MDI5MDMsImV4cCI6MjA2ODk3ODkwM30.snzV6ynuEOY2HETjoxzKyfMzSl_pE9UW6jIDydsoSe4";
-        
-        const supabase = createClient(supabaseUrl, supabaseKey);
+        // Supabase configuration
+        const SUPABASE_URL = 'https://nhuxwgmafdjchljvqlna.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5odXh3Z21hZmRqY2hsanZxbG5hIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzE5NzI5NzAsImV4cCI6MjA0NzU0ODk3MH0.304df104-ec95-4b0b-ae4a-2babbc3d9fcd';
 
-        function addLog(containerId, message, type = 'info') {
-            const container = document.getElementById(containerId);
-            const logEntry = document.createElement('div');
-            logEntry.className = `log-entry ${type}`;
-            logEntry.innerHTML = `[${new Date().toLocaleTimeString()}] ${message}`;
-            container.appendChild(logEntry);
-            container.scrollTop = container.scrollHeight;
+        // Initialize Supabase
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        let testResults = [];
+
+        // Initialize the test
+        async function initializeTest() {
+            await testConnection();
+            await updateDatabaseStats();
+            updateResults('Test initialized successfully');
         }
 
-        async function testDatabaseConnection() {
-            addLog('db-log', '🔗 Testing database connection...', 'info');
-            
+        // Test database connection
+        async function testConnection() {
             try {
+                updateConnectionStatus('Testing connection...', 'info');
+                
                 // Test basic connection
                 const { data, error } = await supabase.from('profiles').select('count').limit(1);
                 
                 if (error) {
-                    addLog('db-log', `❌ Database connection failed: ${error.message}`, 'error');
-                    return;
+                    updateConnectionStatus(`Connection failed: ${error.message}`, 'error');
+                    addTestResult('Database Connection', 'Failed', 'fail');
+                } else {
+                    updateConnectionStatus('Connection successful!', 'success');
+                    addTestResult('Database Connection', 'Successful', 'pass');
                 }
-                
-                addLog('db-log', '✅ Database connection successful!', 'success');
-                addLog('db-log', '📊 Supabase client initialized correctly', 'info');
-                
             } catch (error) {
-                addLog('db-log', `❌ Connection error: ${error.message}`, 'error');
+                updateConnectionStatus(`Connection error: ${error.message}`, 'error');
+                addTestResult('Database Connection', 'Error', 'fail');
             }
         }
 
-        async function checkTables() {
-            addLog('db-log', '🔍 Checking collaboration tables...', 'info');
-            
-            const tables = [
-                'messages',
-                'user_presence', 
-                'study_groups',
-                'study_group_members',
-                'help_requests',
-                'help_request_responses',
-                'notifications',
-                'video_calls',
-                'voice_calls',
-                'shared_resources'
-            ];
-
-            const tableStatus = document.getElementById('tables-status');
-            let statusHtml = '<table class="table-test"><tr><th>Table</th><th>Status</th><th>Details</th></tr>';
-
-            for (const table of tables) {
-                try {
-                    const { data, error } = await supabase.from(table).select('count').limit(1);
-                    
-                    if (error) {
-                        statusHtml += `<tr><td>${table}</td><td>❌ Missing</td><td>${error.message}</td></tr>`;
-                        addLog('db-log', `❌ Table ${table}: ${error.message}`, 'error');
-                    } else {
-                        statusHtml += `<tr><td>${table}</td><td>✅ Exists</td><td>Accessible</td></tr>`;
-                        addLog('db-log', `✅ Table ${table}: Exists and accessible`, 'success');
-                    }
-                } catch (error) {
-                    statusHtml += `<tr><td>${table}</td><td>❌ Error</td><td>${error.message}</td></tr>`;
-                    addLog('db-log', `❌ Table ${table}: ${error.message}`, 'error');
-                }
-            }
-
-            statusHtml += '</table>';
-            tableStatus.innerHTML = statusHtml;
+        // Update connection status
+        function updateConnectionStatus(message, type) {
+            document.getElementById('connection-text').textContent = message;
+            document.getElementById('connection-status').className = `status ${type}`;
         }
 
-        async function testRealtimeFeatures() {
-            addLog('db-log', '🔗 Testing real-time features...', 'info');
-            
+        // Update database statistics
+        async function updateDatabaseStats() {
             try {
-                // Test real-time subscription
-                const channel = supabase.channel('test-channel');
-                
-                channel
-                    .on('postgres_changes', { event: '*', schema: 'public', table: 'messages' }, (payload) => {
-                        addLog('db-log', `📨 Real-time message received: ${JSON.stringify(payload)}`, 'success');
-                    })
-                    .subscribe((status) => {
-                        addLog('db-log', `🔗 Real-time subscription status: ${status}`, 'info');
-                    });
+                // Get users count
+                const { count: usersCount } = await supabase.from('profiles').select('*', { count: 'exact', head: true });
+                document.getElementById('users-count').textContent = usersCount || 0;
 
-                addLog('db-log', '✅ Real-time subscription created successfully', 'success');
-                
-                // Clean up after 5 seconds
-                setTimeout(() => {
-                    channel.unsubscribe();
-                    addLog('db-log', '🔗 Real-time subscription cleaned up', 'info');
-                }, 5000);
-                
+                // Get messages count
+                const { count: messagesCount } = await supabase.from('messages').select('*', { count: 'exact', head: true });
+                document.getElementById('messages-count').textContent = messagesCount || 0;
+
+                // Get groups count
+                const { count: groupsCount } = await supabase.from('study_groups').select('*', { count: 'exact', head: true });
+                document.getElementById('groups-count').textContent = groupsCount || 0;
+
+                // Get help requests count
+                const { count: requestsCount } = await supabase.from('help_requests').select('*', { count: 'exact', head: true });
+                document.getElementById('requests-count').textContent = requestsCount || 0;
+
             } catch (error) {
-                addLog('db-log', `❌ Real-time test failed: ${error.message}`, 'error');
+                console.error('Error updating stats:', error);
             }
         }
 
-        async function testMessaging() {
-            addLog('messaging-log', '📨 Testing messaging functionality...', 'info');
-            
+        // Test user creation
+        async function testUserCreation() {
             try {
-                // Test message insertion
-                const testMessage = {
-                    content: 'Test message from collaboration test',
-                    sender_id: 'test-user',
-                    sender_name: 'Test User',
-                    conversation_id: 'test-conversation',
+                const testUser = {
+                    id: 'test-user-' + Date.now(),
+                    email: 'test@example.com',
+                    full_name: 'Test User',
+                    role: 'student',
                     created_at: new Date().toISOString()
                 };
 
-                const { data, error } = await supabase
-                    .from('messages')
-                    .insert([testMessage])
-                    .select();
+                const { data, error } = await supabase.from('profiles').insert(testUser);
 
                 if (error) {
-                    addLog('messaging-log', `❌ Message insertion failed: ${error.message}`, 'error');
-                    return;
+                    showResults('user-results', 'User Creation Failed', error.message, 'error');
+                    addTestResult('User Creation', 'Failed', 'fail');
+                } else {
+                    showResults('user-results', 'User Creation Successful', JSON.stringify(data, null, 2), 'success');
+                    addTestResult('User Creation', 'Successful', 'pass');
                 }
-
-                addLog('messaging-log', '✅ Test message inserted successfully', 'success');
-                addLog('messaging-log', `📝 Message ID: ${data[0].id}`, 'info');
-
-                // Clean up test message
-                await supabase
-                    .from('messages')
-                    .delete()
-                    .eq('id', data[0].id);
-
-                addLog('messaging-log', '🧹 Test message cleaned up', 'info');
-                
             } catch (error) {
-                addLog('messaging-log', `❌ Messaging test failed: ${error.message}`, 'error');
+                showResults('user-results', 'User Creation Error', error.message, 'error');
+                addTestResult('User Creation', 'Error', 'fail');
             }
         }
 
-        async function testPresence() {
-            addLog('messaging-log', '👤 Testing presence functionality...', 'info');
-            
+        // Test user retrieval
+        async function testUserRetrieval() {
             try {
-                const testPresence = {
-                    user_id: 'test-user',
-                    user_name: 'Test User',
-                    status: 'online',
-                    last_seen: new Date().toISOString()
+                const { data, error } = await supabase.from('profiles').select('*').limit(5);
+
+                if (error) {
+                    showResults('user-results', 'User Retrieval Failed', error.message, 'error');
+                    addTestResult('User Retrieval', 'Failed', 'fail');
+                } else {
+                    showResults('user-results', 'User Retrieval Successful', JSON.stringify(data, null, 2), 'success');
+                    addTestResult('User Retrieval', 'Successful', 'pass');
+                }
+            } catch (error) {
+                showResults('user-results', 'User Retrieval Error', error.message, 'error');
+                addTestResult('User Retrieval', 'Error', 'fail');
+            }
+        }
+
+        // Test user update
+        async function testUserUpdate() {
+            try {
+                const { data, error } = await supabase
+                    .from('profiles')
+                    .update({ updated_at: new Date().toISOString() })
+                    .eq('email', 'test@example.com')
+                    .select();
+
+                if (error) {
+                    showResults('user-results', 'User Update Failed', error.message, 'error');
+                    addTestResult('User Update', 'Failed', 'fail');
+                } else {
+                    showResults('user-results', 'User Update Successful', JSON.stringify(data, null, 2), 'success');
+                    addTestResult('User Update', 'Successful', 'pass');
+                }
+            } catch (error) {
+                showResults('user-results', 'User Update Error', error.message, 'error');
+                addTestResult('User Update', 'Error', 'fail');
+            }
+        }
+
+        // Test message creation
+        async function testMessageCreation() {
+            try {
+                const testMessage = {
+                    sender_id: 'test-user-123',
+                    receiver_id: 'test-user-456',
+                    content: 'Test message from collaboration test',
+                    message_type: 'text',
+                    created_at: new Date().toISOString()
                 };
 
-                const { data, error } = await supabase
-                    .from('user_presence')
-                    .upsert([testPresence])
-                    .select();
+                const { data, error } = await supabase.from('messages').insert(testMessage);
 
                 if (error) {
-                    addLog('messaging-log', `❌ Presence update failed: ${error.message}`, 'error');
-                    return;
+                    showResults('message-results', 'Message Creation Failed', error.message, 'error');
+                    addTestResult('Message Creation', 'Failed', 'fail');
+                } else {
+                    showResults('message-results', 'Message Creation Successful', JSON.stringify(data, null, 2), 'success');
+                    addTestResult('Message Creation', 'Successful', 'pass');
                 }
-
-                addLog('messaging-log', '✅ Presence updated successfully', 'success');
-                addLog('messaging-log', `👤 User status: ${data[0].status}`, 'info');
-                
             } catch (error) {
-                addLog('messaging-log', `❌ Presence test failed: ${error.message}`, 'error');
+                showResults('message-results', 'Message Creation Error', error.message, 'error');
+                addTestResult('Message Creation', 'Error', 'fail');
             }
         }
 
-        async function testStudyGroups() {
-            addLog('messaging-log', '👥 Testing study groups functionality...', 'info');
-            
+        // Test message retrieval
+        async function testMessageRetrieval() {
+            try {
+                const { data, error } = await supabase.from('messages').select('*').limit(5);
+
+                if (error) {
+                    showResults('message-results', 'Message Retrieval Failed', error.message, 'error');
+                    addTestResult('Message Retrieval', 'Failed', 'fail');
+                } else {
+                    showResults('message-results', 'Message Retrieval Successful', JSON.stringify(data, null, 2), 'success');
+                    addTestResult('Message Retrieval', 'Successful', 'pass');
+                }
+            } catch (error) {
+                showResults('message-results', 'Message Retrieval Error', error.message, 'error');
+                addTestResult('Message Retrieval', 'Error', 'fail');
+            }
+        }
+
+        // Test real-time messages
+        async function testRealTimeMessages() {
+            try {
+                const subscription = supabase
+                    .channel('messages')
+                    .on('postgres_changes', 
+                        { event: 'INSERT', schema: 'public', table: 'messages' },
+                        (payload) => {
+                            showResults('message-results', 'Real-time Message Received', JSON.stringify(payload, null, 2), 'success');
+                            addTestResult('Real-time Messages', 'Working', 'pass');
+                        }
+                    )
+                    .subscribe();
+
+                showResults('message-results', 'Real-time Subscription Active', 'Listening for new messages...', 'info');
+                addTestResult('Real-time Messages', 'Subscription Active', 'pass');
+
+                // Cleanup subscription after 10 seconds
+                setTimeout(() => {
+                    subscription.unsubscribe();
+                }, 10000);
+
+            } catch (error) {
+                showResults('message-results', 'Real-time Messages Error', error.message, 'error');
+                addTestResult('Real-time Messages', 'Error', 'fail');
+            }
+        }
+
+        // Test group creation
+        async function testGroupCreation() {
             try {
                 const testGroup = {
                     name: 'Test Study Group',
-                    description: 'Test group for collaboration testing',
-                    subject: 'Testing',
-                    max_members: 5,
-                    created_by: 'test-user'
+                    description: 'A test study group for collaboration testing',
+                    created_by: 'test-user-123',
+                    subject: 'Computer Science',
+                    max_members: 10,
+                    created_at: new Date().toISOString()
                 };
 
-                const { data, error } = await supabase
-                    .from('study_groups')
-                    .insert([testGroup])
-                    .select();
+                const { data, error } = await supabase.from('study_groups').insert(testGroup);
 
                 if (error) {
-                    addLog('messaging-log', `❌ Study group creation failed: ${error.message}`, 'error');
-                    return;
+                    showResults('group-results', 'Group Creation Failed', error.message, 'error');
+                    addTestResult('Group Creation', 'Failed', 'fail');
+                } else {
+                    showResults('group-results', 'Group Creation Successful', JSON.stringify(data, null, 2), 'success');
+                    addTestResult('Group Creation', 'Successful', 'pass');
                 }
-
-                addLog('messaging-log', '✅ Study group created successfully', 'success');
-                addLog('messaging-log', `👥 Group ID: ${data[0].id}`, 'info');
-
-                // Clean up test group
-                await supabase
-                    .from('study_groups')
-                    .delete()
-                    .eq('id', data[0].id);
-
-                addLog('messaging-log', '🧹 Test group cleaned up', 'info');
-                
             } catch (error) {
-                addLog('messaging-log', `❌ Study groups test failed: ${error.message}`, 'error');
+                showResults('group-results', 'Group Creation Error', error.message, 'error');
+                addTestResult('Group Creation', 'Error', 'fail');
             }
         }
 
-        async function testHelpRequests() {
-            addLog('collaboration-log', '🆘 Testing help requests functionality...', 'info');
-            
+        // Test group retrieval
+        async function testGroupRetrieval() {
+            try {
+                const { data, error } = await supabase.from('study_groups').select('*').limit(5);
+
+                if (error) {
+                    showResults('group-results', 'Group Retrieval Failed', error.message, 'error');
+                    addTestResult('Group Retrieval', 'Failed', 'fail');
+                } else {
+                    showResults('group-results', 'Group Retrieval Successful', JSON.stringify(data, null, 2), 'success');
+                    addTestResult('Group Retrieval', 'Successful', 'pass');
+                }
+            } catch (error) {
+                showResults('group-results', 'Group Retrieval Error', error.message, 'error');
+                addTestResult('Group Retrieval', 'Error', 'fail');
+            }
+        }
+
+        // Test group membership
+        async function testGroupMembership() {
+            try {
+                const testMembership = {
+                    group_id: 1,
+                    user_id: 'test-user-123',
+                    role: 'member',
+                    joined_at: new Date().toISOString()
+                };
+
+                const { data, error } = await supabase.from('study_group_members').insert(testMembership);
+
+                if (error) {
+                    showResults('group-results', 'Group Membership Failed', error.message, 'error');
+                    addTestResult('Group Membership', 'Failed', 'fail');
+                } else {
+                    showResults('group-results', 'Group Membership Successful', JSON.stringify(data, null, 2), 'success');
+                    addTestResult('Group Membership', 'Successful', 'pass');
+                }
+            } catch (error) {
+                showResults('group-results', 'Group Membership Error', error.message, 'error');
+                addTestResult('Group Membership', 'Error', 'fail');
+            }
+        }
+
+        // Test help request creation
+        async function testHelpRequestCreation() {
             try {
                 const testRequest = {
-                    title: 'Test Help Request',
-                    description: 'This is a test help request for collaboration testing',
-                    subject: 'Testing',
+                    requester_id: 'test-user-123',
+                    subject: 'Mathematics',
+                    topic: 'Calculus',
+                    description: 'Need help with derivatives',
                     urgency: 'medium',
-                    created_by: 'test-user'
+                    status: 'open',
+                    created_at: new Date().toISOString()
                 };
 
-                const { data, error } = await supabase
-                    .from('help_requests')
-                    .insert([testRequest])
-                    .select();
+                const { data, error } = await supabase.from('help_requests').insert(testRequest);
 
                 if (error) {
-                    addLog('collaboration-log', `❌ Help request creation failed: ${error.message}`, 'error');
-                    return;
+                    showResults('help-results', 'Help Request Creation Failed', error.message, 'error');
+                    addTestResult('Help Request Creation', 'Failed', 'fail');
+                } else {
+                    showResults('help-results', 'Help Request Creation Successful', JSON.stringify(data, null, 2), 'success');
+                    addTestResult('Help Request Creation', 'Successful', 'pass');
                 }
-
-                addLog('collaboration-log', '✅ Help request created successfully', 'success');
-                addLog('collaboration-log', `🆘 Request ID: ${data[0].id}`, 'info');
-
-                // Clean up test request
-                await supabase
-                    .from('help_requests')
-                    .delete()
-                    .eq('id', data[0].id);
-
-                addLog('collaboration-log', '🧹 Test request cleaned up', 'info');
-                
             } catch (error) {
-                addLog('collaboration-log', `❌ Help requests test failed: ${error.message}`, 'error');
+                showResults('help-results', 'Help Request Creation Error', error.message, 'error');
+                addTestResult('Help Request Creation', 'Error', 'fail');
             }
         }
 
-        async function testVideoCalls() {
-            addLog('collaboration-log', '📹 Testing video calls functionality...', 'info');
-            
+        // Test help request retrieval
+        async function testHelpRequestRetrieval() {
             try {
-                const testCall = {
-                    room_id: 'test-room-' + Date.now(),
-                    title: 'Test Video Call',
-                    host_id: 'test-user'
-                };
-
-                const { data, error } = await supabase
-                    .from('video_calls')
-                    .insert([testCall])
-                    .select();
+                const { data, error } = await supabase.from('help_requests').select('*').limit(5);
 
                 if (error) {
-                    addLog('collaboration-log', `❌ Video call creation failed: ${error.message}`, 'error');
-                    return;
+                    showResults('help-results', 'Help Request Retrieval Failed', error.message, 'error');
+                    addTestResult('Help Request Retrieval', 'Failed', 'fail');
+                } else {
+                    showResults('help-results', 'Help Request Retrieval Successful', JSON.stringify(data, null, 2), 'success');
+                    addTestResult('Help Request Retrieval', 'Successful', 'pass');
                 }
-
-                addLog('collaboration-log', '✅ Video call created successfully', 'success');
-                addLog('collaboration-log', `📹 Call ID: ${data[0].id}`, 'info');
-
-                // Clean up test call
-                await supabase
-                    .from('video_calls')
-                    .delete()
-                    .eq('id', data[0].id);
-
-                addLog('collaboration-log', '🧹 Test call cleaned up', 'info');
-                
             } catch (error) {
-                addLog('collaboration-log', `❌ Video calls test failed: ${error.message}`, 'error');
+                showResults('help-results', 'Help Request Retrieval Error', error.message, 'error');
+                addTestResult('Help Request Retrieval', 'Error', 'fail');
             }
         }
 
-        async function testVoiceCalls() {
-            addLog('collaboration-log', '📞 Testing voice calls functionality...', 'info');
-            
+        // Test help request response
+        async function testHelpRequestResponse() {
             try {
-                const testCall = {
-                    caller_id: 'test-user',
-                    receiver_id: 'test-receiver',
-                    status: 'ringing'
+                const testResponse = {
+                    request_id: 1,
+                    responder_id: 'test-user-456',
+                    response: 'I can help you with derivatives!',
+                    created_at: new Date().toISOString()
                 };
 
-                const { data, error } = await supabase
-                    .from('voice_calls')
-                    .insert([testCall])
-                    .select();
+                const { data, error } = await supabase.from('help_request_responses').insert(testResponse);
 
                 if (error) {
-                    addLog('collaboration-log', `❌ Voice call creation failed: ${error.message}`, 'error');
-                    return;
+                    showResults('help-results', 'Help Request Response Failed', error.message, 'error');
+                    addTestResult('Help Request Response', 'Failed', 'fail');
+                } else {
+                    showResults('help-results', 'Help Request Response Successful', JSON.stringify(data, null, 2), 'success');
+                    addTestResult('Help Request Response', 'Successful', 'pass');
                 }
-
-                addLog('collaboration-log', '✅ Voice call created successfully', 'success');
-                addLog('collaboration-log', `📞 Call ID: ${data[0].id}`, 'info');
-
-                // Clean up test call
-                await supabase
-                    .from('voice_calls')
-                    .delete()
-                    .eq('id', data[0].id);
-
-                addLog('collaboration-log', '🧹 Test call cleaned up', 'info');
-                
             } catch (error) {
-                addLog('collaboration-log', `❌ Voice calls test failed: ${error.message}`, 'error');
+                showResults('help-results', 'Help Request Response Error', error.message, 'error');
+                addTestResult('Help Request Response', 'Error', 'fail');
             }
         }
 
-        // Auto-run database connection test on page load
-        window.addEventListener('load', () => {
-            addLog('db-log', '🚀 Collaboration Database Test initialized', 'info');
-            testDatabaseConnection();
-        });
+        // Test presence system
+        async function testPresenceSystem() {
+            try {
+                const testPresence = {
+                    user_id: 'test-user-123',
+                    status: 'online',
+                    last_seen: new Date().toISOString(),
+                    expertise_areas: ['Mathematics', 'Physics']
+                };
+
+                const { data, error } = await supabase.from('user_presence').upsert(testPresence);
+
+                if (error) {
+                    showResults('realtime-results', 'Presence System Failed', error.message, 'error');
+                    addTestResult('Presence System', 'Failed', 'fail');
+                } else {
+                    showResults('realtime-results', 'Presence System Working', JSON.stringify(data, null, 2), 'success');
+                    addTestResult('Presence System', 'Working', 'pass');
+                }
+            } catch (error) {
+                showResults('realtime-results', 'Presence System Error', error.message, 'error');
+                addTestResult('Presence System', 'Error', 'fail');
+            }
+        }
+
+        // Test real-time updates
+        async function testRealTimeUpdates() {
+            try {
+                const subscription = supabase
+                    .channel('presence')
+                    .on('postgres_changes', 
+                        { event: '*', schema: 'public', table: 'user_presence' },
+                        (payload) => {
+                            showResults('realtime-results', 'Real-time Update Received', JSON.stringify(payload, null, 2), 'success');
+                            addTestResult('Real-time Updates', 'Working', 'pass');
+                        }
+                    )
+                    .subscribe();
+
+                showResults('realtime-results', 'Real-time Updates Active', 'Listening for presence changes...', 'info');
+                addTestResult('Real-time Updates', 'Subscription Active', 'pass');
+
+                // Cleanup subscription after 10 seconds
+                setTimeout(() => {
+                    subscription.unsubscribe();
+                }, 10000);
+
+            } catch (error) {
+                showResults('realtime-results', 'Real-time Updates Error', error.message, 'error');
+                addTestResult('Real-time Updates', 'Error', 'fail');
+            }
+        }
+
+        // Test notifications
+        async function testNotifications() {
+            try {
+                const testNotification = {
+                    user_id: 'test-user-123',
+                    title: 'Test Notification',
+                    message: 'This is a test notification from the collaboration system',
+                    type: 'info',
+                    read: false,
+                    created_at: new Date().toISOString()
+                };
+
+                const { data, error } = await supabase.from('notifications').insert(testNotification);
+
+                if (error) {
+                    showResults('realtime-results', 'Notifications Failed', error.message, 'error');
+                    addTestResult('Notifications', 'Failed', 'fail');
+                } else {
+                    showResults('realtime-results', 'Notifications Working', JSON.stringify(data, null, 2), 'success');
+                    addTestResult('Notifications', 'Working', 'pass');
+                }
+            } catch (error) {
+                showResults('realtime-results', 'Notifications Error', error.message, 'error');
+                addTestResult('Notifications', 'Error', 'fail');
+            }
+        }
+
+        // Show results in a specific container
+        function showResults(containerId, title, content, type) {
+            const container = document.getElementById(containerId);
+            container.style.display = 'block';
+            container.innerHTML = `
+                <h4>${title}</h4>
+                <pre style="background: rgba(0,0,0,0.3); padding: 10px; border-radius: 5px; overflow-x: auto;">${content}</pre>
+            `;
+        }
+
+        // Add test result
+        function addTestResult(testName, result, status) {
+            testResults.push({ testName, result, status });
+            updateResults();
+        }
+
+        // Update results display
+        function updateResults(message = '') {
+            const passed = testResults.filter(r => r.status === 'pass').length;
+            const failed = testResults.filter(r => r.status === 'fail').length;
+            const total = testResults.length;
+
+            let resultsText = `Tests: ${passed} passed, ${failed} failed (${total} total)`;
+            if (message) {
+                resultsText += ` | ${message}`;
+            }
+
+            document.getElementById('results-text').textContent = resultsText;
+        }
+
+        // Initialize when page loads
+        window.addEventListener('load', initializeTest);
     </script>
 </body>
 </html> 

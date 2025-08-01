@@ -1,6 +1,6 @@
-# 🎓 Academic Spark - Interactive Learning Platform
+# 🎓 EDUConnect - Interactive Learning Platform
 
-A modern, real-time collaborative learning platform built with React, TypeScript, and Supabase. Academic Spark provides an immersive educational experience with AI-powered assistance, real-time collaboration, and comprehensive course management.
+A modern, real-time collaborative learning platform built with React, TypeScript, and Supabase. EDUConnect provides an immersive educational experience with AI-powered assistance, real-time collaboration, and comprehensive course management.
 
 ## ✨ Features
 
@@ -45,7 +45,7 @@ A modern, real-time collaborative learning platform built with React, TypeScript
 1. **Clone the repository**
    ```bash
    git clone <repository-url>
-   cd academic-spark
+   cd educonnect
    ```
 
 2. **Install dependencies**
@@ -118,33 +118,7 @@ The application requires the following Supabase tables:
    - Check all tables are accessible
    - Test real-time features
 
-## 📁 Project Structure
-
-```
-academic-spark/
-├── src/
-│   ├── components/          # React components
-│   │   ├── ui/             # Shadcn UI components
-│   │   ├── RealTimeCourses.tsx
-│   │   ├── CollaborationChat.tsx
-│   │   └── ...
-│   ├── hooks/              # Custom React hooks
-│   │   ├── useAuth.tsx
-│   │   ├── useRealtimeCollaboration.tsx
-│   │   └── ...
-│   ├── pages/              # Page components
-│   │   ├── Dashboard.tsx
-│   │   ├── Collaboration.tsx
-│   │   └── ...
-│   ├── services/           # External services
-│   │   └── realtimeService.ts
-│   └── integrations/       # Third-party integrations
-│       ├── supabase/
-│       └── openai/
-├── supabase/               # Database migrations
-├── public/                 # Static assets
-└── docs/                   # Documentation
-```
+`
 
 ## 🛠️ Technology Stack
 
@@ -290,4 +264,4 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 ---
 
-**🎓 Happy Learning with Academic Spark!** 🚀
+**🎓 Happy Learning with EDUConnect!** 🚀

@@ -1,35 +1,85 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Separator } from '@/components/ui/separator';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useToast } from '@/hooks/use-toast';
 import { 
+  Send, 
   Bot, 
-  Brain,
+  User, 
+  Loader2, 
+  ArrowLeft, 
+  Sparkles, 
+  BookOpen, 
+  MessageCircle,
   Lightbulb,
-  BookOpen,
-  Sparkles,
-  MessageSquare,
-  ChevronRight,
-  Star,
-  Clock,
-  Users,
-  TrendingUp,
   Zap,
-  HelpCircle,
-  Search,
-  GraduationCap,
-  Book,
+  Brain,
   Target,
-  ArrowLeft
+  TrendingUp,
+  Award,
+  Star,
+  CheckCircle,
+  Clock,
+  Calendar,
+  Bookmark,
+  Share2,
+  ThumbsUp,
+  MessageSquare,
+  FileText,
+  Video,
+  Headphones,
+  PenTool,
+  Code,
+  Calculator,
+  Globe,
+  Microscope,
+  Palette,
+  Music,
+  Camera,
+  Gamepad2,
+  Dumbbell,
+  Heart,
+  Leaf,
+  Car,
+  Plane,
+  Ship,
+  Train,
+  Bus,
+  Bike,
+  Volume,
+  Volume1,
+  Volume2,
+  VolumeX,
+  Mic,
+  MicOff,
+  VideoOff,
+  Monitor,
+  Smartphone,
+  Tablet,
+  Laptop,
+  Server,
+  Database,
+  Cloud,
+  Wifi,
+  Bluetooth,
+  Usb,
+  Antenna,
+  Satellite,
+  Radar,
+  HelpCircle
 } from 'lucide-react';
+import useAuth from '@/hooks/useAuth';
 import { AIChatSystem } from '@/components/AIChatSystem';
-import { useAuth } from '@/hooks/useAuth';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Profile } from '@/integrations/supabase/types';
 import { cn } from '@/lib/utils';
-import { useToast } from '@/hooks/use-toast';
 
 export default function AIQA() {
   const [showAIChat, setShowAIChat] = useState(false);
@@ -79,15 +129,15 @@ export default function AIQA() {
 
         if (createError) {
           console.error('Error creating AI conversation:', createError);
-                  // If database is not set up, create a real conversation
-        return {
-          id: 'real-ai-conversation',
-          student_id: user.id,
-          instructor_id: 'ai-assistant',
-          title: 'AI Learning Assistant',
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-        };
+          // If database is not set up, create a real conversation
+          return {
+            id: 'real-ai-conversation',
+            student_id: user.id,
+            instructor_id: 'ai-assistant',
+            title: 'AI Learning Assistant',
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+          };
         }
 
         return newConversation;

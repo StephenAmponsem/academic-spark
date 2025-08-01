@@ -21,7 +21,7 @@ import {
   Bookmark,
   Heart
 } from 'lucide-react';
-import { useAuth } from '@/hooks/useAuth';
+import useAuth from '@/hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useEnrollInCourse, useEnrolledCourses } from '@/hooks/useEnrolledCourses';

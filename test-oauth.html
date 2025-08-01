@@ -3,282 +3,364 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OAuth Test - Academic Spark</title>
+    <title>OAuth Test - EDUConnect</title>
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     <style>
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             max-width: 800px;
             margin: 0 auto;
             padding: 20px;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
+            color: white;
         }
         .container {
-            background: white;
-            border-radius: 15px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
             padding: 30px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
-        }
-        .header {
-            text-align: center;
-            margin-bottom: 30px;
-            padding: 20px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border-radius: 10px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
         }
         .test-section {
-            background: #f8f9fa;
-            padding: 25px;
             margin: 20px 0;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.1);
             border-radius: 10px;
-            border-left: 5px solid #667eea;
+            border: 1px solid rgba(255, 255, 255, 0.2);
         }
-        .button-group {
-            display: flex;
-            gap: 10px;
-            margin: 20px 0;
-        }
-        .btn {
-            padding: 12px 20px;
+        button {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
             border: none;
+            padding: 12px 24px;
             border-radius: 8px;
             cursor: pointer;
-            text-decoration: none;
-            display: inline-block;
-            font-weight: bold;
-            transition: all 0.3s ease;
-            text-align: center;
-            flex: 1;
+            margin: 5px;
+            font-size: 14px;
+            transition: transform 0.2s;
         }
-        .btn-primary {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-        }
-        .btn-primary:hover {
+        button:hover {
             transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
         }
-        .btn-secondary {
-            background: #27ae60;
-            color: white;
-        }
-        .btn-secondary:hover {
-            background: #229954;
-            transform: translateY(-2px);
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
         }
         .status {
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        .success { background: rgba(34, 197, 94, 0.2); border: 1px solid rgba(34, 197, 94, 0.5); }
+        .error { background: rgba(239, 68, 68, 0.2); border: 1px solid rgba(239, 68, 68, 0.5); }
+        .info { background: rgba(59, 130, 246, 0.2); border: 1px solid rgba(59, 130, 246, 0.5); }
+        .user-info {
+            background: rgba(255, 255, 255, 0.1);
             padding: 15px;
+            border-radius: 10px;
+            margin: 10px 0;
+        }
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        .provider-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
             margin: 15px 0;
+        }
+        .provider-button {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 10px 15px;
             border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .provider-button:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-1px);
+        }
+        .provider-icon {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
             font-weight: bold;
         }
-        .status.success {
-            background: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
-        }
-        .status.error {
-            background: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
-        }
-        .status.info {
-            background: #d1ecf1;
-            color: #0c5460;
-            border: 1px solid #bee5eb;
-        }
-        .console-logs {
-            background: #2c3e50;
-            color: #ecf0f1;
-            padding: 15px;
-            border-radius: 8px;
-            font-family: 'Courier New', monospace;
-            max-height: 300px;
-            overflow-y: auto;
-            margin: 15px 0;
-        }
-        .log-entry {
-            margin: 5px 0;
-            padding: 5px;
-            border-radius: 3px;
-        }
-        .log-success { color: #27ae60; }
-        .log-error { color: #e74c3c; }
-        .log-info { color: #3498db; }
-        .log-warning { color: #f39c12; }
+        .google-icon { background: #4285f4; }
+        .github-icon { background: #333; }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="header">
-            <h1>🔐 OAuth Test - Academic Spark</h1>
-            <p>Testing social authentication functionality</p>
-        </div>
+        <h1>🔐 OAuth Test - EDUConnect</h1>
+        <p>Testing OAuth authentication with Google and GitHub providers</p>
 
         <div class="test-section">
-            <h2>🔧 Supabase Configuration</h2>
-            <div class="status info">
-                <strong>URL:</strong> https://nhuxwgmafdjchljvqlna.supabase.co<br>
-                <strong>Status:</strong> <span id="config-status">Checking...</span>
+            <h3>🔧 Configuration</h3>
+            <div id="config-status" class="status info">
+                <strong>Status:</strong> <span id="config-text">Checking configuration...</span>
             </div>
         </div>
 
         <div class="test-section">
-            <h2>🔑 Authentication Test</h2>
-            <div class="button-group">
-                <button class="btn btn-primary" onclick="testGoogleAuth()">Test Google OAuth</button>
-                <button class="btn btn-secondary" onclick="testGithubAuth()">Test GitHub OAuth</button>
+            <h3>👤 Authentication</h3>
+            <div id="auth-status" class="status info">
+                <strong>Status:</strong> <span id="auth-text">Not authenticated</span>
             </div>
-            <div class="status info">
-                <strong>Current Session:</strong> <span id="session-status">Checking...</span>
+            
+            <div class="provider-buttons">
+                <div class="provider-button" onclick="signInWithGoogle()">
+                    <div class="provider-icon google-icon">G</div>
+                    <span>Sign in with Google</span>
+                </div>
+                <div class="provider-button" onclick="signInWithGithub()">
+                    <div class="provider-icon github-icon">G</div>
+                    <span>Sign in with GitHub</span>
+                </div>
+            </div>
+
+            <button onclick="signOut()" id="signout-btn" style="display: none;">Sign Out</button>
+        </div>
+
+        <div class="test-section">
+            <h3>👤 User Information</h3>
+            <div id="user-info" class="user-info" style="display: none;">
+                <p><strong>Email:</strong> <span id="user-email"></span></p>
+                <p><strong>Name:</strong> <span id="user-name"></span></p>
+                <p><strong>Provider:</strong> <span id="user-provider"></span></p>
+                <p><strong>User ID:</strong> <span id="user-id"></span></p>
             </div>
         </div>
 
         <div class="test-section">
-            <h2>🔍 URL Parameters</h2>
-            <div class="status info">
-                <strong>Current URL:</strong> <span id="current-url"></span><br>
-                <strong>Access Token:</strong> <span id="access-token-status"></span><br>
-                <strong>Refresh Token:</strong> <span id="refresh-token-status"></span>
+            <h3>📊 Session Management</h3>
+            <button onclick="getSession()">Get Current Session</button>
+            <button onclick="refreshSession()">Refresh Session</button>
+            <div id="session-info" class="user-info" style="display: none;">
+                <p><strong>Session ID:</strong> <span id="session-id"></span></p>
+                <p><strong>Access Token:</strong> <span id="access-token"></span></p>
+                <p><strong>Refresh Token:</strong> <span id="refresh-token"></span></p>
+                <p><strong>Expires At:</strong> <span id="expires-at"></span></p>
             </div>
         </div>
 
         <div class="test-section">
-            <h2>📝 Console Logs</h2>
-            <div id="console-logs" class="console-logs">
-                <div class="log-entry log-info">[System] OAuth test page loaded</div>
+            <h3>🔍 Error Log</h3>
+            <div id="error-log" class="status info">
+                <strong>Log:</strong> <span id="error-text">No errors yet</span>
             </div>
         </div>
     </div>
 
     <script>
-        // Initialize Supabase client
-        const SUPABASE_URL = "https://nhuxwgmafdjchljvqlna.supabase.co";
-        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5odXh3Z21hZmRqY2hsanZxbG5hIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM0MDI5MDMsImV4cCI6MjA2ODk3ODkwM30.snzV6ynuEOY2HETjoxzKyfMzSl_pE9UW6jIDydsoSe4";
+        // Supabase configuration
+        const SUPABASE_URL = 'https://nhuxwgmafdjchljvqlna.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5odXh3Z21hZmRqY2hsanZxbG5hIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzE5NzI5NzAsImV4cCI6MjA0NzU0ODk3MH0.304df104-ec95-4b0b-ae4a-2babbc3d9fcd';
 
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-            auth: {
-                storage: localStorage,
-                persistSession: true,
-                autoRefreshToken: true,
-                detectSessionInUrl: true,
-                flowType: 'pkce',
-                debug: true,
-            },
-        });
+        // Initialize Supabase
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        // Initialize console logs
-        const logsContainer = document.getElementById('console-logs');
-        
-        function addLog(message, type = 'info') {
-            const timestamp = new Date().toLocaleTimeString();
-            const logEntry = document.createElement('div');
-            logEntry.className = `log-entry log-${type}`;
-            logEntry.textContent = `[${timestamp}] ${message}`;
-            logsContainer.appendChild(logEntry);
-            logsContainer.scrollTop = logsContainer.scrollHeight;
-            console.log(message);
+        let currentUser = null;
+
+        // Initialize the test
+        async function initializeTest() {
+            try {
+                // Check configuration
+                document.getElementById('config-text').textContent = 'Configuration loaded successfully';
+                document.getElementById('config-status').className = 'status success';
+
+                // Check current session
+                const { data: { session }, error } = await supabase.auth.getSession();
+                if (session) {
+                    currentUser = session.user;
+                    updateAuthStatus('Authenticated', 'success');
+                    updateUserInfo(session.user);
+                    document.getElementById('signout-btn').style.display = 'inline-block';
+                } else {
+                    updateAuthStatus('Not authenticated', 'info');
+                }
+
+                // Set up auth state listener
+                supabase.auth.onAuthStateChange((event, session) => {
+                    console.log('Auth state changed:', event, session);
+                    
+                    if (event === 'SIGNED_IN' && session) {
+                        currentUser = session.user;
+                        updateAuthStatus('Authenticated', 'success');
+                        updateUserInfo(session.user);
+                        document.getElementById('signout-btn').style.display = 'inline-block';
+                        logMessage('User signed in successfully');
+                    } else if (event === 'SIGNED_OUT') {
+                        currentUser = null;
+                        updateAuthStatus('Not authenticated', 'info');
+                        document.getElementById('user-info').style.display = 'none';
+                        document.getElementById('signout-btn').style.display = 'none';
+                        document.getElementById('session-info').style.display = 'none';
+                        logMessage('User signed out');
+                    }
+                });
+
+            } catch (error) {
+                logError('Initialization error:', error);
+            }
         }
 
-        // Test Google OAuth
-        async function testGoogleAuth() {
-            addLog('🔐 Testing Google OAuth...', 'info');
-            
+        // Sign in with Google
+        async function signInWithGoogle() {
             try {
+                logMessage('Attempting Google sign in...');
                 const { data, error } = await supabase.auth.signInWithOAuth({
                     provider: 'google',
                     options: {
-                        redirectTo: `${window.location.origin}/test-oauth.html`,
-                        queryParams: {
-                            access_type: 'offline',
-                            prompt: 'consent',
-                        },
-                    },
+                        redirectTo: window.location.origin
+                    }
                 });
 
                 if (error) {
-                    addLog(`❌ Google OAuth error: ${error.message}`, 'error');
+                    logError('Google sign in error:', error);
                 } else {
-                    addLog(`✅ Google OAuth initiated: ${JSON.stringify(data)}`, 'success');
+                    logMessage('Google sign in initiated');
                 }
             } catch (error) {
-                addLog(`❌ Google OAuth exception: ${error.message}`, 'error');
+                logError('Google sign in exception:', error);
             }
         }
 
-        // Test GitHub OAuth
-        async function testGithubAuth() {
-            addLog('🔐 Testing GitHub OAuth...', 'info');
-            
+        // Sign in with GitHub
+        async function signInWithGithub() {
             try {
+                logMessage('Attempting GitHub sign in...');
                 const { data, error } = await supabase.auth.signInWithOAuth({
                     provider: 'github',
                     options: {
-                        redirectTo: `${window.location.origin}/test-oauth.html`,
-                    },
+                        redirectTo: window.location.origin
+                    }
                 });
 
                 if (error) {
-                    addLog(`❌ GitHub OAuth error: ${error.message}`, 'error');
+                    logError('GitHub sign in error:', error);
                 } else {
-                    addLog(`✅ GitHub OAuth initiated: ${JSON.stringify(data)}`, 'success');
+                    logMessage('GitHub sign in initiated');
                 }
             } catch (error) {
-                addLog(`❌ GitHub OAuth exception: ${error.message}`, 'error');
+                logError('GitHub sign in exception:', error);
             }
         }
 
-        // Check current session
-        async function checkSession() {
+        // Sign out
+        async function signOut() {
             try {
-                const { data: { session } } = await supabase.auth.getSession();
-                const sessionStatus = session ? `Logged in as ${session.user.email}` : 'No session';
-                document.getElementById('session-status').textContent = sessionStatus;
-                addLog(`🔐 Session check: ${sessionStatus}`, 'info');
-            } catch (error) {
-                addLog(`❌ Session check error: ${error.message}`, 'error');
-            }
-        }
-
-        // Check URL parameters
-        function checkUrlParams() {
-            const urlParams = new URLSearchParams(window.location.search);
-            const accessToken = urlParams.get('access_token');
-            const refreshToken = urlParams.get('refresh_token');
-            
-            document.getElementById('current-url').textContent = window.location.href;
-            document.getElementById('access-token-status').textContent = accessToken ? 'Present' : 'Not found';
-            document.getElementById('refresh-token-status').textContent = refreshToken ? 'Present' : 'Not found';
-            
-            if (accessToken && refreshToken) {
-                addLog('🔐 OAuth callback detected with tokens', 'success');
-            }
-        }
-
-        // Initialize page
-        document.addEventListener('DOMContentLoaded', function() {
-            addLog('🎓 OAuth test page loaded successfully!', 'success');
-            
-            // Check configuration
-            document.getElementById('config-status').textContent = 'Configured';
-            
-            // Check session
-            checkSession();
-            
-            // Check URL parameters
-            checkUrlParams();
-            
-            // Set up auth state listener
-            supabase.auth.onAuthStateChange((event, session) => {
-                addLog(`🔐 Auth state change: ${event}`, 'info');
-                if (session) {
-                    addLog(`🔐 User: ${session.user.email}`, 'success');
+                logMessage('Signing out...');
+                const { error } = await supabase.auth.signOut();
+                
+                if (error) {
+                    logError('Sign out error:', error);
+                } else {
+                    logMessage('Sign out successful');
                 }
-                checkSession();
-            });
-        });
+            } catch (error) {
+                logError('Sign out exception:', error);
+            }
+        }
+
+        // Get current session
+        async function getSession() {
+            try {
+                logMessage('Getting current session...');
+                const { data: { session }, error } = await supabase.auth.getSession();
+                
+                if (error) {
+                    logError('Get session error:', error);
+                } else if (session) {
+                    updateSessionInfo(session);
+                    logMessage('Session retrieved successfully');
+                } else {
+                    logMessage('No active session found');
+                    document.getElementById('session-info').style.display = 'none';
+                }
+            } catch (error) {
+                logError('Get session exception:', error);
+            }
+        }
+
+        // Refresh session
+        async function refreshSession() {
+            try {
+                logMessage('Refreshing session...');
+                const { data: { session }, error } = await supabase.auth.refreshSession();
+                
+                if (error) {
+                    logError('Refresh session error:', error);
+                } else if (session) {
+                    updateSessionInfo(session);
+                    logMessage('Session refreshed successfully');
+                } else {
+                    logMessage('No session to refresh');
+                }
+            } catch (error) {
+                logError('Refresh session exception:', error);
+            }
+        }
+
+        // Update authentication status
+        function updateAuthStatus(status, type) {
+            document.getElementById('auth-text').textContent = status;
+            document.getElementById('auth-status').className = `status ${type}`;
+        }
+
+        // Update user information
+        function updateUserInfo(user) {
+            document.getElementById('user-email').textContent = user.email || 'N/A';
+            document.getElementById('user-name').textContent = user.user_metadata?.full_name || user.user_metadata?.name || 'N/A';
+            document.getElementById('user-provider').textContent = user.app_metadata?.provider || 'N/A';
+            document.getElementById('user-id').textContent = user.id || 'N/A';
+            document.getElementById('user-info').style.display = 'block';
+        }
+
+        // Update session information
+        function updateSessionInfo(session) {
+            document.getElementById('session-id').textContent = session.access_token ? session.access_token.substring(0, 20) + '...' : 'N/A';
+            document.getElementById('access-token').textContent = session.access_token ? session.access_token.substring(0, 20) + '...' : 'N/A';
+            document.getElementById('refresh-token').textContent = session.refresh_token ? session.refresh_token.substring(0, 20) + '...' : 'N/A';
+            document.getElementById('expires-at').textContent = session.expires_at ? new Date(session.expires_at * 1000).toLocaleString() : 'N/A';
+            document.getElementById('session-info').style.display = 'block';
+        }
+
+        // Log messages
+        function logMessage(message) {
+            console.log(message);
+            document.getElementById('error-text').textContent = message;
+            document.getElementById('error-log').className = 'status success';
+        }
+
+        // Log errors
+        function logError(message, error) {
+            const errorMessage = `${message} ${error?.message || error}`;
+            console.error(errorMessage);
+            document.getElementById('error-text').textContent = errorMessage;
+            document.getElementById('error-log').className = 'status error';
+        }
+
+        // Initialize when page loads
+        window.addEventListener('load', initializeTest);
     </script>
 </body>
 </html> 

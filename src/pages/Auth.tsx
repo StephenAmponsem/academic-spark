@@ -6,9 +6,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
-import { Github, Mail, ArrowLeft, Eye, EyeOff, Lock, User, Mail as MailIcon, BookOpen } from 'lucide-react';
+import { ArrowLeft, Eye, EyeOff, Lock, User, Mail as MailIcon, BookOpen } from 'lucide-react';
 
 export default function Auth() {
   const [email, setEmail] = useState('');
@@ -21,32 +20,21 @@ export default function Auth() {
   const { toast } = useToast();
 
   useEffect(() => {
-    // Check if user is already logged in
+    // Quick auth check with timeout for faster response
     const checkAuth = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session) {
-        navigate('/');
-      }
-    };
-    checkAuth();
-
-    // Listen for auth state changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        console.log('🔐 Auth state change in Auth page:', event, session ? 'Session exists' : 'No session');
-        
-        if (event === 'SIGNED_IN' && session) {
-          console.log('🔐 User signed in successfully:', session.user?.email);
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session) {
           navigate('/');
-        } else if (event === 'SIGNED_OUT') {
-          console.log('🔐 User signed out');
         }
+      } catch (error) {
+        // Ignore auth check errors for faster loading
       }
-    );
-
-    return () => {
-      subscription.unsubscribe();
     };
+    
+    // Add minimal delay to prevent blocking UI
+    const timeoutId = setTimeout(checkAuth, 50);
+    return () => clearTimeout(timeoutId);
   }, [navigate]);
 
   const handleSignUp = async (e: React.FormEvent) => {
@@ -127,49 +115,6 @@ export default function Auth() {
     }
   };
 
-  const handleSocialLogin = async (provider: 'google' | 'github') => {
-    setIsLoading(true);
-
-    try {
-      console.log(`🔐 Attempting ${provider} social login...`);
-      
-      const { data, error } = await supabase.auth.signInWithOAuth({
-        provider,
-        options: {
-          redirectTo: `${window.location.origin}/`,
-          queryParams: {
-            access_type: 'offline',
-            prompt: 'consent',
-          },
-        },
-      });
-
-      if (error) {
-        console.error(`🔐 ${provider} login error:`, error);
-        toast({
-          title: `${provider} login failed`,
-          description: error.message,
-          variant: "destructive",
-        });
-      } else {
-        console.log(`🔐 ${provider} login initiated:`, data);
-        toast({
-          title: "Redirecting...",
-          description: `Redirecting to ${provider} for authentication.`,
-        });
-      }
-    } catch (error) {
-      console.error(`🔐 ${provider} login exception:`, error);
-      toast({
-        title: "An error occurred",
-        description: "Please try again later.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
       {/* Back Button */}
@@ -196,7 +141,7 @@ export default function Auth() {
               <BookOpen className="h-8 w-8 text-white" />
             </div>
             <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-              Academic Spark
+              EDUConnect
             </h1>
             <p className="text-muted-foreground mt-2">
               Your gateway to knowledge and growth
@@ -388,47 +333,6 @@ export default function Auth() {
                   </form>
                 </TabsContent>
               </Tabs>
-
-              {/* Social Login Section */}
-              <div className="space-y-4">
-                <div className="relative">
-                  <div className="absolute inset-0 flex items-center">
-                    <Separator className="w-full" />
-                  </div>
-                  <div className="relative flex justify-center text-xs uppercase">
-                    <span className="bg-white dark:bg-gray-900 px-3 text-muted-foreground font-medium">
-                      Or continue with
-                    </span>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-3">
-                  <Button
-                    variant="outline"
-                    onClick={() => handleSocialLogin('google')}
-                    disabled={isLoading}
-                    className="h-11 border-muted-foreground/20 hover:bg-muted/50 transition-colors"
-                  >
-                    <Mail className="mr-2 h-4 w-4" />
-                    Google
-                  </Button>
-                  <Button
-                    variant="outline"
-                    onClick={() => handleSocialLogin('github')}
-                    disabled={isLoading}
-                    className="h-11 border-muted-foreground/20 hover:bg-muted/50 transition-colors"
-                  >
-                    <Github className="mr-2 h-4 w-4" />
-                    GitHub
-                  </Button>
-                </div>
-                
-                <div className="text-center">
-                  <p className="text-xs text-muted-foreground">
-                    Sign in with your social account or use email and password
-                  </p>
-                </div>
-              </div>
             </CardContent>
           </Card>
 
