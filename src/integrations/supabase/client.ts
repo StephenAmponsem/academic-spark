@@ -14,10 +14,51 @@ export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_ANON_KEY, 
     persistSession: true,
     autoRefreshToken: true,
     detectSessionInUrl: true,
+    flowType: 'pkce', // Use PKCE flow for better security
+    debug: true, // Enable debug mode to see auth events
   },
   realtime: {
     params: {
       eventsPerSecond: 10,
     },
   },
+  global: {
+    headers: {
+      'X-Client-Info': 'academic-spark-web',
+    },
+  },
 });
+
+// Add a listener to track session changes
+supabase.auth.onAuthStateChange((event, session) => {
+  console.log('🔐 Supabase Auth State Change:', event, session ? 'Session exists' : 'No session');
+  
+  // Log session details for debugging
+  if (session) {
+    console.log('🔐 Session user:', session.user?.email);
+    console.log('🔐 Session expires at:', new Date(session.expires_at! * 1000).toLocaleString());
+    console.log('🔐 Session provider:', session.user?.app_metadata?.provider);
+  }
+});
+
+// Handle OAuth callback
+if (typeof window !== 'undefined') {
+  // Check if we're on an OAuth callback page
+  const urlParams = new URLSearchParams(window.location.search);
+  const accessToken = urlParams.get('access_token');
+  const refreshToken = urlParams.get('refresh_token');
+  
+  if (accessToken && refreshToken) {
+    console.log('🔐 OAuth callback detected, setting session...');
+    supabase.auth.setSession({
+      access_token: accessToken,
+      refresh_token: refreshToken,
+    }).then(({ data, error }) => {
+      if (error) {
+        console.error('🔐 Error setting OAuth session:', error);
+      } else {
+        console.log('🔐 OAuth session set successfully:', data.session?.user?.email);
+      }
+    });
+  }
+}

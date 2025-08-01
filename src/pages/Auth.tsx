@@ -29,6 +29,24 @@ export default function Auth() {
       }
     };
     checkAuth();
+
+    // Listen for auth state changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        console.log('🔐 Auth state change in Auth page:', event, session ? 'Session exists' : 'No session');
+        
+        if (event === 'SIGNED_IN' && session) {
+          console.log('🔐 User signed in successfully:', session.user?.email);
+          navigate('/');
+        } else if (event === 'SIGNED_OUT') {
+          console.log('🔐 User signed out');
+        }
+      }
+    );
+
+    return () => {
+      subscription.unsubscribe();
+    };
   }, [navigate]);
 
   const handleSignUp = async (e: React.FormEvent) => {
@@ -113,21 +131,35 @@ export default function Auth() {
     setIsLoading(true);
 
     try {
-      const { error } = await supabase.auth.signInWithOAuth({
+      console.log(`🔐 Attempting ${provider} social login...`);
+      
+      const { data, error } = await supabase.auth.signInWithOAuth({
         provider,
         options: {
           redirectTo: `${window.location.origin}/`,
+          queryParams: {
+            access_type: 'offline',
+            prompt: 'consent',
+          },
         },
       });
 
       if (error) {
+        console.error(`🔐 ${provider} login error:`, error);
         toast({
-          title: "Social login failed",
+          title: `${provider} login failed`,
           description: error.message,
           variant: "destructive",
         });
+      } else {
+        console.log(`🔐 ${provider} login initiated:`, data);
+        toast({
+          title: "Redirecting...",
+          description: `Redirecting to ${provider} for authentication.`,
+        });
       }
     } catch (error) {
+      console.error(`🔐 ${provider} login exception:`, error);
       toast({
         title: "An error occurred",
         description: "Please try again later.",

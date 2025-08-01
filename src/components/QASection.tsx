@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -74,7 +74,7 @@ const QASection = () => {
     if (user) {
       loadConversations();
     }
-  }, [user]);
+  }, [user, loadConversations]);
 
   // Load messages when conversation changes
   useEffect(() => {
@@ -83,7 +83,7 @@ const QASection = () => {
     }
   }, [currentConversation]);
 
-  const loadConversations = async () => {
+  const loadConversations = useCallback(async () => {
     try {
       const { data, error } = await supabase
         .from('conversations')
@@ -97,7 +97,7 @@ const QASection = () => {
       console.error('Error loading conversations:', error);
       toast.error('Failed to load conversations');
     }
-  };
+  }, [user?.id]);
 
   const loadMessages = async (conversationId: string) => {
     try {

@@ -49,7 +49,7 @@ const Settings = () => {
     await signOut();
   };
 
-  const handleSettingChange = async (key: string, value: any) => {
+  const handleSettingChange = async (key: string, value: string | boolean | number) => {
     if (!settings) return;
 
     try {

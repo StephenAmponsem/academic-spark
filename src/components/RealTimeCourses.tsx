@@ -14,7 +14,12 @@ import {
   WifiOff,
   Globe,
   Search,
-  ArrowLeft
+  ArrowLeft,
+  Play,
+  Award,
+  TrendingUp,
+  Bookmark,
+  Heart
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
@@ -34,10 +39,14 @@ interface ExternalCourse {
   instructor: string;
   category: string;
   thumbnail?: string;
+  price?: string;
+  level?: 'beginner' | 'intermediate' | 'advanced';
+  language?: string;
+  certificate?: boolean;
 }
 
 export function RealTimeCourses() {
-  const { user } = useAuth();
+  const { user, session } = useAuth();
   const navigate = useNavigate();
   const enrollInCourse = useEnrollInCourse();
   const { data: enrolledCourses } = useEnrolledCourses();
@@ -45,8 +54,10 @@ export function RealTimeCourses() {
   const [filteredCourses, setFilteredCourses] = useState<ExternalCourse[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
+  const [selectedLevel, setSelectedLevel] = useState('all');
   const [isConnected, setIsConnected] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [favorites, setFavorites] = useState<string[]>([]);
 
   // Categories for filtering
   const categories = [
@@ -56,244 +67,327 @@ export function RealTimeCourses() {
     { id: 'science', name: 'Science' },
     { id: 'business', name: 'Business' },
     { id: 'language', name: 'Languages' },
-    { id: 'art', name: 'Arts & Design' }
+    { id: 'art', name: 'Arts & Design' },
+    { id: 'data-science', name: 'Data Science' },
+    { id: 'ai-ml', name: 'AI & Machine Learning' },
+    { id: 'web-development', name: 'Web Development' }
   ];
 
-  // Sample external courses (in real app, this would come from external APIs)
+  // Levels for filtering
+  const levels = [
+    { id: 'all', name: 'All Levels' },
+    { id: 'beginner', name: 'Beginner' },
+    { id: 'intermediate', name: 'Intermediate' },
+    { id: 'advanced', name: 'Advanced' }
+  ];
+
+  // Enhanced external courses with more realistic data
   const externalCourses: ExternalCourse[] = [
     {
-      id: '1',
-      title: 'Advanced JavaScript Programming',
-      description: 'Master modern JavaScript with ES6+, async programming, and advanced patterns.',
+      id: 'react-complete-guide',
+      title: 'React - The Complete Guide (incl Hooks, React Router, Redux)',
+      description: 'Dive in and learn React.js from scratch! Learn Reactjs, Hooks, Redux, React Router, Next.js, Best Practices and way more!',
+      provider: 'Udemy',
+      url: 'https://www.udemy.com/course/react-the-complete-guide-incl-redux/',
+      duration: '48 hours',
+      rating: 4.8,
+      students: 892000,
+      isLive: true,
+      instructor: 'Maximilian Schwarzmüller',
+      category: 'programming',
+      price: '$89.99',
+      level: 'beginner',
+      language: 'English',
+      certificate: true
+    },
+    {
+      id: 'python-data-science',
+      title: 'Python for Data Science and Machine Learning Bootcamp',
+      description: 'Learn how to use NumPy, Pandas, Seaborn, Matplotlib, Plotly, Scikit-Learn, Machine Learning, Tensorflow, and more!',
+      provider: 'Udemy',
+      url: 'https://www.udemy.com/course/python-for-data-science-and-machine-learning-bootcamp/',
+      duration: '44 hours',
+      rating: 4.6,
+      students: 456000,
+      isLive: true,
+      instructor: 'Jose Portilla',
+      category: 'data-science',
+      price: '$94.99',
+      level: 'intermediate',
+      language: 'English',
+      certificate: true
+    },
+    {
+      id: 'javascript-modern',
+      title: 'The Complete JavaScript Course 2024: From Zero to Expert!',
+      description: 'The modern JavaScript course for everyone! Master JavaScript with projects, challenges and theory. Many courses in one!',
+      provider: 'Udemy',
+      url: 'https://www.udemy.com/course/the-complete-javascript-course/',
+      duration: '69 hours',
+      rating: 4.8,
+      students: 1234000,
+      isLive: true,
+      instructor: 'Jonas Schmedtmann',
+      category: 'programming',
+      price: '$84.99',
+      level: 'beginner',
+      language: 'English',
+      certificate: true
+    },
+    {
+      id: 'machine-learning-stanford',
+      title: 'Machine Learning',
+      description: 'Machine learning is the science of getting computers to act without being explicitly programmed.',
       provider: 'Coursera',
-      url: 'https://coursera.org/course/javascript',
+      url: 'https://www.coursera.org/learn/machine-learning',
+      duration: '11 weeks',
+      rating: 4.9,
+      students: 4500000,
+      isLive: true,
+      instructor: 'Andrew Ng',
+      category: 'ai-ml',
+      price: 'Free',
+      level: 'intermediate',
+      language: 'English',
+      certificate: true
+    },
+    {
+      id: 'web-development-bootcamp',
+      title: 'The Complete 2024 Web Development Bootcamp',
+      description: 'Become a Full-Stack Web Developer with just ONE course. HTML, CSS, JavaScript, Node.js, React, MongoDB, Web3 and DApps',
+      provider: 'Udemy',
+      url: 'https://www.udemy.com/course/the-complete-web-development-bootcamp/',
+      duration: '65 hours',
+      rating: 4.7,
+      students: 2340000,
+      isLive: true,
+      instructor: 'Dr. Angela Yu',
+      category: 'web-development',
+      price: '$84.99',
+      level: 'beginner',
+      language: 'English',
+      certificate: true
+    },
+    {
+      id: 'calculus-mit',
+      title: 'Calculus 1A: Differentiation',
+      description: 'Discover the derivative—what it is, how to compute it, and when to apply it in solving real world problems.',
+      provider: 'edX',
+      url: 'https://www.edx.org/course/calculus-1a-differentiation',
+      duration: '12 weeks',
+      rating: 4.5,
+      students: 89000,
+      isLive: true,
+      instructor: 'David Jerison',
+      category: 'mathematics',
+      price: 'Free',
+      level: 'intermediate',
+      language: 'English',
+      certificate: true
+    },
+    {
+      id: 'business-strategy-harvard',
+      title: 'Business Strategy',
+      description: 'Learn how to analyze business opportunities and develop a comprehensive business strategy.',
+      provider: 'Harvard Business School Online',
+      url: 'https://online.hbs.edu/courses/business-strategy/',
       duration: '8 weeks',
       rating: 4.8,
-      students: 15420,
+      students: 67000,
       isLive: true,
-      instructor: 'Dr. Sarah Johnson',
-      category: 'programming'
+      instructor: 'Felix Oberholzer-Gee',
+      category: 'business',
+      price: '$1,600',
+      level: 'intermediate',
+      language: 'English',
+      certificate: true
     },
     {
-      id: '2',
-      title: 'Calculus for Beginners',
-      description: 'Learn calculus fundamentals with interactive examples and real-world applications.',
-      provider: 'edX',
-      url: 'https://edx.org/course/calculus',
-      duration: '12 weeks',
-      rating: 4.6,
-      students: 8920,
-      isLive: true,
-      instructor: 'Prof. Michael Chen',
-      category: 'mathematics'
-    },
-    {
-      id: '3',
-      title: 'Data Science Fundamentals',
-      description: 'Introduction to data science, statistics, and machine learning basics.',
-      provider: 'Udacity',
-      url: 'https://udacity.com/course/data-science',
-      duration: '10 weeks',
-      rating: 4.9,
-      students: 23450,
-      isLive: true,
-      instructor: 'Dr. Emily Rodriguez',
-      category: 'science'
-    },
-    {
-      id: '4',
-      title: 'Business Strategy & Management',
-      description: 'Strategic thinking and business management principles for modern organizations.',
-      provider: 'Harvard Online',
-      url: 'https://harvard.edu/course/business',
-      duration: '6 weeks',
-      rating: 4.7,
-      students: 5670,
-      isLive: true,
-      instructor: 'Prof. David Thompson',
-      category: 'business'
-    },
-    {
-      id: '5',
+      id: 'spanish-duolingo',
       title: 'Spanish for Beginners',
-      description: 'Learn Spanish from scratch with native speakers and cultural insights.',
+      description: 'Learn Spanish with bite-size lessons based on science.',
       provider: 'Duolingo',
-      url: 'https://duolingo.com/course/spanish',
-      duration: '16 weeks',
-      rating: 4.5,
-      students: 45680,
-      isLive: true,
-      instructor: 'Maria Garcia',
-      category: 'language'
-    },
-    {
-      id: '6',
-      title: 'Digital Art & Design',
-      description: 'Create stunning digital artwork using modern design tools and techniques.',
-      provider: 'Skillshare',
-      url: 'https://skillshare.com/course/digital-art',
-      duration: '4 weeks',
+      url: 'https://www.duolingo.com/course/es/en/Learn-Spanish',
+      duration: 'Self-paced',
       rating: 4.4,
-      students: 12340,
+      students: 8900000,
       isLive: true,
-      instructor: 'Alex Kim',
-      category: 'art'
+      instructor: 'Duolingo Team',
+      category: 'language',
+      price: 'Free',
+      level: 'beginner',
+      language: 'Spanish',
+      certificate: false
     },
     {
-      id: '7',
-      title: 'Python for Data Analysis',
-      description: 'Learn Python programming with focus on data analysis and visualization.',
-      provider: 'DataCamp',
-      url: 'https://datacamp.com/course/python-data',
-      duration: '6 weeks',
+      id: 'digital-art-udemy',
+      title: 'Digital Art for Beginners: Learn to Draw on Your iPad',
+      description: 'Learn digital art from scratch with this comprehensive course for beginners using Procreate on iPad.',
+      provider: 'Udemy',
+      url: 'https://www.udemy.com/course/digital-art-for-beginners-learn-to-draw-on-your-ipad/',
+      duration: '6 hours',
+      rating: 4.6,
+      students: 234000,
+      isLive: true,
+      instructor: 'Brad Colbow',
+      category: 'art',
+      price: '$19.99',
+      level: 'beginner',
+      language: 'English',
+      certificate: true
+    },
+    {
+      id: 'deep-learning-ai',
+      title: 'Deep Learning Specialization',
+      description: 'Master Deep Learning, and Break into AI. Instructor: Andrew Ng, Stanford University.',
+      provider: 'Coursera',
+      url: 'https://www.coursera.org/specializations/deep-learning',
+      duration: '5 months',
+      rating: 4.9,
+      students: 1200000,
+      isLive: true,
+      instructor: 'Andrew Ng',
+      category: 'ai-ml',
+      price: '$49/month',
+      level: 'advanced',
+      language: 'English',
+      certificate: true
+    },
+    {
+      id: 'nodejs-complete',
+      title: 'Node.js: The Complete Guide (MVC, REST APIs, GraphQL, Deno)',
+      description: 'Master Node.js & Deno.js, build REST APIs with Node.js, GraphQL APIs, add Authentication, use MongoDB, SQL & more',
+      provider: 'Udemy',
+      url: 'https://www.udemy.com/course/nodejs-the-complete-guide/',
+      duration: '44 hours',
       rating: 4.7,
-      students: 18750,
+      students: 567000,
       isLive: true,
-      instructor: 'Dr. James Wilson',
-      category: 'programming'
+      instructor: 'Maximilian Schwarzmüller',
+      category: 'programming',
+      price: '$89.99',
+      level: 'intermediate',
+      language: 'English',
+      certificate: true
     },
     {
-      id: '8',
-      title: 'Linear Algebra Essentials',
-      description: 'Master linear algebra concepts essential for machine learning and engineering.',
+      id: 'statistics-coursera',
+      title: 'Statistics with Python',
+      description: 'Learn the fundamentals of statistics and how to analyze data using Python.',
+      provider: 'Coursera',
+      url: 'https://www.coursera.org/specializations/statistics-with-python',
+      duration: '4 months',
+      rating: 4.6,
+      students: 234000,
+      isLive: true,
+      instructor: 'University of Michigan',
+      category: 'data-science',
+      price: '$49/month',
+      level: 'intermediate',
+      language: 'English',
+      certificate: true
+    },
+    {
+      id: 'linear-algebra-mit',
+      title: 'Linear Algebra',
+      description: 'Learn linear algebra and its applications in computer science, engineering, and data science.',
       provider: 'MIT OpenCourseWare',
-      url: 'https://ocw.mit.edu/course/linear-algebra',
+      url: 'https://ocw.mit.edu/courses/mathematics/18-06-linear-algebra-spring-2010/',
       duration: '14 weeks',
       rating: 4.8,
-      students: 11230,
+      students: 156000,
       isLive: true,
-      instructor: 'Prof. Lisa Anderson',
-      category: 'mathematics'
+      instructor: 'Gilbert Strang',
+      category: 'mathematics',
+      price: 'Free',
+      level: 'advanced',
+      language: 'English',
+      certificate: false
     },
     {
-      id: '9',
-      title: 'Machine Learning Fundamentals',
-      description: 'Introduction to machine learning algorithms and their practical applications.',
+      id: 'entrepreneurship-stanford',
+      title: 'How to Start a Startup',
+      description: 'Learn the fundamentals of starting a company from Silicon Valley entrepreneurs.',
       provider: 'Stanford Online',
-      url: 'https://stanford.edu/course/ml',
-      duration: '12 weeks',
-      rating: 4.9,
-      students: 29870,
+      url: 'https://www.startupclass.co/',
+      duration: '20 lectures',
+      rating: 4.7,
+      students: 89000,
       isLive: true,
-      instructor: 'Prof. Andrew Ng',
-      category: 'science'
+      instructor: 'Sam Altman',
+      category: 'business',
+      price: 'Free',
+      level: 'intermediate',
+      language: 'English',
+      certificate: false
     },
     {
-      id: '10',
-      title: 'Financial Accounting',
-      description: 'Learn accounting principles and financial statement analysis.',
-      provider: 'Khan Academy',
-      url: 'https://khanacademy.org/course/accounting',
-      duration: '8 weeks',
-      rating: 4.6,
-      students: 9450,
-      isLive: true,
-      instructor: 'Prof. Robert Smith',
-      category: 'business'
-    },
-    {
-      id: '11',
-      title: 'French Conversation',
-      description: 'Improve French speaking skills through interactive conversations.',
+      id: 'french-babbel',
+      title: 'French for Beginners',
+      description: 'Learn French with interactive lessons and real conversations.',
       provider: 'Babbel',
-      url: 'https://babbel.com/course/french',
-      duration: '10 weeks',
+      url: 'https://www.babbel.com/learn-french-online',
+      duration: 'Self-paced',
       rating: 4.5,
-      students: 15680,
+      students: 2340000,
       isLive: true,
-      instructor: 'Sophie Dubois',
-      category: 'language'
+      instructor: 'Babbel Team',
+      category: 'language',
+      price: '$12.95/month',
+      level: 'beginner',
+      language: 'French',
+      certificate: false
     },
     {
-      id: '12',
-      title: 'Web Development Bootcamp',
-      description: 'Complete web development course covering HTML, CSS, JavaScript, and React.',
+      id: 'ui-ux-design',
+      title: 'UI/UX Design Bootcamp',
+      description: 'Learn UI/UX Design with hands-on projects and master Figma, Adobe XD, and more.',
+      provider: 'DesignLab',
+      url: 'https://trydesignlab.com/ui-ux-bootcamp/',
+      duration: '16 weeks',
+      rating: 4.8,
+      students: 89000,
+      isLive: true,
+      instructor: 'Various Instructors',
+      category: 'art',
+      price: '$6,249',
+      level: 'intermediate',
+      language: 'English',
+      certificate: true
+    },
+    {
+      id: 'react-native',
+      title: 'React Native: Advanced Concepts',
+      description: 'Master advanced React Native concepts including animations, navigation, state management, and more.',
       provider: 'Udemy',
-      url: 'https://udemy.com/course/web-dev',
-      duration: '20 weeks',
-      rating: 4.8,
-      students: 45620,
-      isLive: true,
-      instructor: 'Colt Steele',
-      category: 'programming'
-    },
-    {
-      id: '13',
-      title: 'Statistics for Beginners',
-      description: 'Learn statistical concepts and methods for data analysis.',
-      provider: 'Coursera',
-      url: 'https://coursera.org/course/statistics',
-      duration: '9 weeks',
-      rating: 4.7,
-      students: 13450,
-      isLive: true,
-      instructor: 'Dr. Jennifer Lee',
-      category: 'mathematics'
-    },
-    {
-      id: '14',
-      title: 'Neuroscience Fundamentals',
-      description: 'Explore the human brain and nervous system through interactive modules.',
-      provider: 'edX',
-      url: 'https://edx.org/course/neuroscience',
-      duration: '11 weeks',
+      url: 'https://www.udemy.com/course/react-native-advanced-concepts/',
+      duration: '28 hours',
       rating: 4.6,
-      students: 8230,
+      students: 123000,
       isLive: true,
-      instructor: 'Dr. Mark Johnson',
-      category: 'science'
+      instructor: 'Stephen Grider',
+      category: 'programming',
+      price: '$84.99',
+      level: 'advanced',
+      language: 'English',
+      certificate: true
     },
     {
-      id: '15',
-      title: 'Digital Marketing Strategy',
-      description: 'Learn modern digital marketing techniques and social media management.',
-      provider: 'HubSpot Academy',
-      url: 'https://hubspot.com/course/marketing',
-      duration: '7 weeks',
-      rating: 4.5,
-      students: 18760,
-      isLive: true,
-      instructor: 'Sarah Williams',
-      category: 'business'
-    },
-    {
-      id: '16',
-      title: 'Japanese for Beginners',
-      description: 'Learn Japanese writing, speaking, and cultural context.',
-      provider: 'Rosetta Stone',
-      url: 'https://rosettastone.com/course/japanese',
-      duration: '18 weeks',
-      rating: 4.4,
-      students: 9870,
-      isLive: true,
-      instructor: 'Yuki Tanaka',
-      category: 'language'
-    },
-    {
-      id: '17',
-      title: 'Photography Masterclass',
-      description: 'Master digital photography techniques and post-processing skills.',
-      provider: 'CreativeLive',
-      url: 'https://creativelive.com/course/photography',
-      duration: '5 weeks',
+      id: 'python-automation',
+      title: 'Automate the Boring Stuff with Python',
+      description: 'Learn to automate everyday tasks using Python programming.',
+      provider: 'Udemy',
+      url: 'https://www.udemy.com/course/automate/',
+      duration: '9 hours',
       rating: 4.7,
-      students: 15640,
+      students: 456000,
       isLive: true,
-      instructor: 'Annie Leibovitz',
-      category: 'art'
-    },
-    {
-      id: '18',
-      title: 'React.js Advanced Concepts',
-      description: 'Deep dive into React hooks, context, and advanced patterns.',
-      provider: 'Frontend Masters',
-      url: 'https://frontendmasters.com/course/react',
-      duration: '6 weeks',
-      rating: 4.8,
-      students: 22340,
-      isLive: true,
-      instructor: 'Kent C. Dodds',
-      category: 'programming'
+      instructor: 'Al Sweigart',
+      category: 'programming',
+      price: '$19.99',
+      level: 'beginner',
+      language: 'English',
+      certificate: true
     }
   ];
 
@@ -303,19 +397,24 @@ export function RealTimeCourses() {
     setFilteredCourses(externalCourses);
     setLoading(false);
     setIsConnected(true); // Set as connected by default for better UX
-  }, []);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleSearch = (term: string) => {
     setSearchTerm(term);
-    filterCourses(term, selectedCategory);
+    filterCourses(term, selectedCategory, selectedLevel);
   };
 
   const handleCategoryFilter = (category: string) => {
     setSelectedCategory(category);
-    filterCourses(searchTerm, category);
+    filterCourses(searchTerm, category, selectedLevel);
   };
 
-  const filterCourses = (search: string, category: string) => {
+  const handleLevelFilter = (level: string) => {
+    setSelectedLevel(level);
+    filterCourses(searchTerm, selectedCategory, level);
+  };
+
+  const filterCourses = (search: string, category: string, level: string) => {
     let filtered = courses;
 
     // Filter by search term
@@ -332,33 +431,151 @@ export function RealTimeCourses() {
       filtered = filtered.filter(course => course.category === category);
     }
 
+    // Filter by level
+    if (level !== 'all') {
+      filtered = filtered.filter(course => course.level === level);
+    }
+
     setFilteredCourses(filtered);
   };
 
   const handleCourseAccess = async (course: ExternalCourse) => {
     try {
-      // Record course access
+      // Enhanced debugging
+      console.log('🔗 ===== COURSE ACCESS DEBUG =====');
+      console.log('🔗 Accessing course:', course.title);
+      console.log('🔗 Course URL:', course.url);
+      console.log('🔗 Provider:', course.provider);
+      console.log('🔗 User logged in:', !!user);
+      console.log('🔗 Current window location:', window.location.href);
+      console.log('🔗 Session state before course access:', !!user);
+
+      // Store current session state before course access
+      const currentUser = user;
+      const currentSession = session;
+
+      // Record course access if user is logged in (NON-BLOCKING)
       if (user) {
-        try {
-          await supabase
-            .from('course_access_logs')
-            .insert({
-              user_id: user.id,
-              course_id: course.id,
-              course_title: course.title,
-              provider: course.provider,
-              accessed_at: new Date().toISOString()
-            });
-        } catch (logError) {
-          // If logging fails, just continue - it's not critical
-          console.warn('Could not log course access:', logError);
-        }
+        // Use setTimeout to make this non-blocking
+        setTimeout(async () => {
+          try {
+            console.log('🔗 Attempting to log course access to database...');
+            
+            // Check session again before database operation
+            const { data: { session } } = await supabase.auth.getSession();
+            if (!session) {
+              console.warn('⚠️ Session lost during course access logging');
+              return;
+            }
+            
+            const { error } = await supabase
+              .from('analytics_events')
+              .insert({
+                event_type: 'course_access',
+                event_data: {
+                  course_id: course.id,
+                  course_title: course.title,
+                  provider: course.provider,
+                  url: course.url
+                },
+                user_id: user.id
+              });
+            
+            if (error) {
+              console.warn('⚠️ Could not log course access:', error);
+            } else {
+              console.log('✅ Course access logged to database successfully');
+            }
+          } catch (logError) {
+            console.warn('⚠️ Could not log course access:', logError);
+          }
+        }, 0); // Execute asynchronously without blocking
       }
 
-      // Open course in new tab
-      window.open(course.url, '_blank');
+      // Always try to open in new tab first (PREFERRED METHOD)
+      console.log('🔗 Opening course in new tab:', course.url);
+      const newWindow = window.open(course.url, '_blank', 'noopener,noreferrer');
+      
+      // Check if the window was opened successfully
+      if (newWindow) {
+        console.log('✅ Course opened successfully in new tab');
+        console.log('✅ New window object:', newWindow);
+        
+        // Show user feedback that course opened in new tab
+        console.log('📝 Course opened in new tab - you can continue browsing here while learning');
+        
+        // Add a focus event listener to check session when returning to the original tab
+        const handleWindowFocus = () => {
+          console.log('🔐 Window focused - checking session state...');
+          console.log('🔐 Previous user state:', !!currentUser);
+          console.log('🔐 Previous session state:', !!currentSession);
+          
+          // Check current session state
+          supabase.auth.getSession().then(({ data: { session } }) => {
+            console.log('🔐 Current session state after returning from course:', session ? 'Active' : 'Inactive');
+            
+            // If session was lost, attempt recovery
+            if (!session && currentUser) {
+              console.log('🔐 Session lost after course access, attempting recovery...');
+              // Trigger session recovery through the auth context
+              if (typeof window !== 'undefined' && window.dispatchEvent) {
+                window.dispatchEvent(new CustomEvent('sessionRecovery'));
+              }
+            }
+          });
+        };
+        
+        window.addEventListener('focus', handleWindowFocus, { once: true });
+      } else {
+        console.warn('⚠️ Popup blocked. Attempting alternative methods...');
+        
+        // Try to show user how to allow popups
+        const allowPopups = confirm(
+          `Course: ${course.title}\n\n` +
+          `This course needs to open in a new tab, but popups are blocked.\n\n` +
+          `To allow this course to open:\n` +
+          `1. Click "Allow" in the popup blocker notification\n` +
+          `2. Or right-click the "Access Course" button and select "Open in new tab"\n\n` +
+          `Would you like to try opening the course again?`
+        );
+        
+        if (allowPopups) {
+          // Try again with a slight delay
+          setTimeout(() => {
+            const retryWindow = window.open(course.url, '_blank', 'noopener,noreferrer');
+            if (retryWindow) {
+              console.log('✅ Course opened successfully on retry');
+            } else {
+              console.warn('⚠️ Still blocked. Opening in same tab as fallback');
+              // Last resort: open in same tab
+              window.location.href = course.url;
+            }
+          }, 100);
+        } else {
+          console.log('🔗 User chose not to retry. Course access cancelled.');
+        }
+      }
+      
+      console.log('🔗 ===== END COURSE ACCESS DEBUG =====');
     } catch (error) {
-      console.error('Error accessing course:', error);
+      console.error('❌ Error accessing course:', error);
+      console.error('❌ Error details:', {
+        message: error.message,
+        stack: error.stack,
+        course: course
+      });
+      
+      // Even if there's an error, try to open the course URL as fallback
+      try {
+        console.log('🔗 Attempting fallback course access...');
+        const fallbackWindow = window.open(course.url, '_blank', 'noopener,noreferrer');
+        if (!fallbackWindow) {
+          console.log('🔗 Fallback: opening in same tab');
+          window.location.href = course.url;
+        }
+      } catch (fallbackError) {
+        console.error('❌ Fallback also failed:', fallbackError);
+      }
     }
   };
 
@@ -386,6 +603,18 @@ export function RealTimeCourses() {
 
   const isCourseEnrolled = (courseId: string) => {
     return enrolledCourses?.some(enrollment => enrollment.course_id === courseId) || false;
+  };
+
+  const toggleFavorite = (courseId: string) => {
+    setFavorites(prev => 
+      prev.includes(courseId) 
+        ? prev.filter(id => id !== courseId)
+        : [...prev, courseId]
+    );
+  };
+
+  const isFavorite = (courseId: string) => {
+    return favorites.includes(courseId);
   };
 
   if (loading) {
@@ -430,8 +659,22 @@ export function RealTimeCourses() {
             </div>
           </div>
 
+          {/* Information Banner */}
+          <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+            <div className="flex items-start gap-3">
+              <ExternalLink className="h-5 w-5 text-blue-600 mt-0.5 flex-shrink-0" />
+              <div>
+                <h3 className="font-medium text-blue-900 mb-1">📚 Course Access Information</h3>
+                <p className="text-sm text-blue-700">
+                  Courses open in a new tab, so you can continue browsing here while learning. 
+                  This prevents any session issues and allows you to easily switch between your learning and browsing.
+                </p>
+              </div>
+            </div>
+          </div>
+
           {/* Search and Filter */}
-          <div className="flex flex-col md:flex-row gap-4 mb-6">
+          <div className="flex flex-col lg:flex-row gap-4 mb-6">
             <div className="flex-1 relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
               <Input
@@ -441,7 +684,7 @@ export function RealTimeCourses() {
                 className="pl-10"
               />
             </div>
-            <div className="flex gap-2">
+            <div className="flex gap-2 flex-wrap">
               {categories.map((category) => (
                 <Button
                   key={category.id}
@@ -454,30 +697,56 @@ export function RealTimeCourses() {
               ))}
             </div>
           </div>
+
+          {/* Level Filter */}
+          <div className="flex gap-2 mb-6">
+            {levels.map((level) => (
+              <Button
+                key={level.id}
+                variant={selectedLevel === level.id ? "default" : "outline"}
+                size="sm"
+                onClick={() => handleLevelFilter(level.id)}
+              >
+                {level.name}
+              </Button>
+            ))}
+          </div>
         </div>
 
         {/* Course Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredCourses.map((course) => (
-            <Card key={course.id} className="hover:shadow-lg transition-shadow">
+            <Card key={course.id} className="hover:shadow-lg transition-shadow group">
               <CardHeader>
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
-                    <CardTitle className="text-lg mb-2">{course.title}</CardTitle>
-                    <CardDescription className="text-sm mb-3">
+                    <CardTitle className="text-lg mb-2 group-hover:text-blue-600 transition-colors">
+                      {course.title}
+                    </CardTitle>
+                    <CardDescription className="text-sm mb-3 line-clamp-3">
                       {course.description}
                     </CardDescription>
                   </div>
-                                     <div className="flex gap-2">
-                     <Badge variant="outline">
-                       {course.provider}
-                     </Badge>
-                     {isCourseEnrolled(course.id) && (
-                       <Badge className="bg-green-500 text-white">
-                         Enrolled
-                       </Badge>
-                     )}
-                   </div>
+                  <div className="flex flex-col gap-2">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => toggleFavorite(course.id)}
+                      className={`h-8 w-8 p-0 ${isFavorite(course.id) ? 'text-red-500' : 'text-gray-400'}`}
+                    >
+                      <Heart className={`h-4 w-4 ${isFavorite(course.id) ? 'fill-current' : ''}`} />
+                    </Button>
+                    <div className="flex gap-2">
+                      <Badge variant="outline">
+                        {course.provider}
+                      </Badge>
+                      {isCourseEnrolled(course.id) && (
+                        <Badge className="bg-green-500 text-white">
+                          Enrolled
+                        </Badge>
+                      )}
+                    </div>
+                  </div>
                 </div>
               </CardHeader>
 
@@ -512,34 +781,64 @@ export function RealTimeCourses() {
                     <span className="font-medium">Instructor:</span> {course.instructor}
                   </div>
 
-                                       {/* Action Buttons */}
-                     <div className="flex gap-2 pt-2">
-                       <Button
-                         onClick={() => handleCourseAccess(course)}
-                         className="flex-1 bg-blue-600 hover:bg-blue-700"
-                       >
-                         <ExternalLink className="h-4 w-4 mr-2" />
-                         Access Course
-                       </Button>
-                                               <Button 
-                          onClick={() => handleEnrollInCourse(course)}
-                          disabled={enrollInCourse.isPending}
-                          variant={isCourseEnrolled(course.id) ? "default" : "outline"}
-                          size="sm"
-                          className={isCourseEnrolled(course.id) 
-                            ? "bg-green-600 hover:bg-green-700 text-white" 
-                            : "bg-green-50 hover:bg-green-100 border-green-200 text-green-700"
-                          }
-                        >
-                          {enrollInCourse.isPending ? (
-                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-green-600"></div>
-                          ) : isCourseEnrolled(course.id) ? (
-                            "Enrolled"
-                          ) : (
-                            <BookOpen className="h-4 w-4" />
-                          )}
-                        </Button>
-                     </div>
+                  {/* Additional Info */}
+                  <div className="flex flex-wrap gap-2 text-xs">
+                    {course.level && (
+                      <Badge variant="secondary" className="text-xs">
+                        {course.level}
+                      </Badge>
+                    )}
+                    {course.language && (
+                      <Badge variant="secondary" className="text-xs">
+                        {course.language}
+                      </Badge>
+                    )}
+                    {course.certificate && (
+                      <Badge variant="secondary" className="text-xs">
+                        <Award className="h-3 w-3 mr-1" />
+                        Certificate
+                      </Badge>
+                    )}
+                    {course.price && (
+                      <Badge variant="outline" className="text-xs font-medium">
+                        {course.price}
+                      </Badge>
+                    )}
+                  </div>
+
+                  {/* Action Buttons */}
+                  <div className="flex gap-2 pt-2">
+                    <Button
+                      onClick={() => {
+                        console.log('🔘 Button clicked for course:', course.title);
+                        handleCourseAccess(course);
+                      }}
+                      className="flex-1 bg-blue-600 hover:bg-blue-700 group"
+                      title="Opens course in a new tab - you can continue browsing here"
+                    >
+                      <Play className="h-4 w-4 mr-2" />
+                      <span>Access Course</span>
+                      <ExternalLink className="h-3 w-3 ml-1 opacity-70 group-hover:opacity-100 transition-opacity" />
+                    </Button>
+                    <Button 
+                      onClick={() => handleEnrollInCourse(course)}
+                      disabled={enrollInCourse.isPending}
+                      variant={isCourseEnrolled(course.id) ? "default" : "outline"}
+                      size="sm"
+                      className={isCourseEnrolled(course.id) 
+                        ? "bg-green-600 hover:bg-green-700 text-white" 
+                        : "bg-green-50 hover:bg-green-100 border-green-200 text-green-700"
+                      }
+                    >
+                      {enrollInCourse.isPending ? (
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-green-600"></div>
+                      ) : isCourseEnrolled(course.id) ? (
+                        "Enrolled"
+                      ) : (
+                        <BookOpen className="h-4 w-4" />
+                      )}
+                    </Button>
+                  </div>
                 </div>
               </CardContent>
             </Card>
@@ -553,6 +852,57 @@ export function RealTimeCourses() {
             <p className="text-gray-500">Try adjusting your search or filter criteria.</p>
           </div>
         )}
+
+        {/* Course Statistics */}
+        <div className="mt-12 grid grid-cols-1 md:grid-cols-4 gap-6">
+          <Card className="bg-gradient-to-r from-blue-500 to-blue-600 text-white">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-blue-100 text-sm font-medium">Total Courses</p>
+                  <p className="text-3xl font-bold">{courses.length}</p>
+                </div>
+                <BookOpen className="h-8 w-8 text-blue-200" />
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-gradient-to-r from-green-500 to-green-600 text-white">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-green-100 text-sm font-medium">Live Courses</p>
+                  <p className="text-3xl font-bold">{courses.filter(c => c.isLive).length}</p>
+                </div>
+                <TrendingUp className="h-8 w-8 text-green-200" />
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-gradient-to-r from-purple-500 to-purple-600 text-white">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-purple-100 text-sm font-medium">Free Courses</p>
+                  <p className="text-3xl font-bold">{courses.filter(c => c.price === 'Free').length}</p>
+                </div>
+                <Award className="h-8 w-8 text-purple-200" />
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-gradient-to-r from-orange-500 to-orange-600 text-white">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-orange-100 text-sm font-medium">Your Favorites</p>
+                  <p className="text-3xl font-bold">{favorites.length}</p>
+                </div>
+                <Heart className="h-8 w-8 text-orange-200" />
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       </div>
     </div>
   );

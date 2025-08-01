@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Collaboration Database Test - Academic Spark</title>
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .container {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .test-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 2px solid #e5e7eb;
+            border-radius: 10px;
+            background: #f9fafb;
+        }
+        .test-section h3 {
+            margin-top: 0;
+            color: #374151;
+            border-bottom: 2px solid #e5e7eb;
+            padding-bottom: 10px;
+        }
+        .status {
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+            font-weight: 500;
+        }
+        .status.success {
+            background: #d1fae5;
+            color: #065f46;
+            border: 1px solid #10b981;
+        }
+        .status.error {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #ef4444;
+        }
+        .status.info {
+            background: #dbeafe;
+            color: #1e40af;
+            border: 1px solid #3b82f6;
+        }
+        .button-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin: 15px 0;
+        }
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        .btn-primary {
+            background: #3b82f6;
+            color: white;
+        }
+        .btn-primary:hover {
+            background: #2563eb;
+        }
+        .btn-secondary {
+            background: #6b7280;
+            color: white;
+        }
+        .btn-secondary:hover {
+            background: #4b5563;
+        }
+        .btn-success {
+            background: #10b981;
+            color: white;
+        }
+        .btn-success:hover {
+            background: #059669;
+        }
+        .btn-danger {
+            background: #ef4444;
+            color: white;
+        }
+        .btn-danger:hover {
+            background: #dc2626;
+        }
+        .log-container {
+            background: #1f2937;
+            color: #f9fafb;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            max-height: 300px;
+            overflow-y: auto;
+            margin-top: 15px;
+        }
+        .log-entry {
+            margin-bottom: 5px;
+            padding: 2px 0;
+        }
+        .log-entry.success { color: #10b981; }
+        .log-entry.error { color: #ef4444; }
+        .log-entry.info { color: #3b82f6; }
+        .log-entry.warning { color: #f59e0b; }
+        .table-test {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+        .table-test th, .table-test td {
+            border: 1px solid #d1d5db;
+            padding: 8px 12px;
+            text-align: left;
+        }
+        .table-test th {
+            background: #f3f4f6;
+            font-weight: 600;
+        }
+        .table-test tr:nth-child(even) {
+            background: #f9fafb;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔗 Collaboration Database Test</h1>
+            <p>Testing real-time collaboration features and database connectivity</p>
+        </div>
+
+        <div class="test-section">
+            <h3>🔧 Database Connection Test</h3>
+            <div class="status info">
+                <strong>Testing Supabase Connection:</strong><br>
+                This will verify if the database is accessible and collaboration tables exist.
+            </div>
+            <div class="button-group">
+                <button class="btn btn-primary" onclick="testDatabaseConnection()">Test Database Connection</button>
+                <button class="btn btn-secondary" onclick="checkTables()">Check Collaboration Tables</button>
+                <button class="btn btn-success" onclick="testRealtimeFeatures()">Test Real-time Features</button>
+            </div>
+            <div id="db-log" class="log-container"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>📨 Real-time Messaging Test</h3>
+            <div class="status info">
+                <strong>Testing Real-time Messaging:</strong><br>
+                This will test message sending, receiving, and real-time updates.
+            </div>
+            <div class="button-group">
+                <button class="btn btn-primary" onclick="testMessaging()">Test Messaging</button>
+                <button class="btn btn-secondary" onclick="testPresence()">Test Presence</button>
+                <button class="btn btn-success" onclick="testStudyGroups()">Test Study Groups</button>
+            </div>
+            <div id="messaging-log" class="log-container"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>👥 Collaboration Features Test</h3>
+            <div class="status info">
+                <strong>Testing Collaboration Features:</strong><br>
+                This will test help requests, video calls, and other collaboration features.
+            </div>
+            <div class="button-group">
+                <button class="btn btn-primary" onclick="testHelpRequests()">Test Help Requests</button>
+                <button class="btn btn-secondary" onclick="testVideoCalls()">Test Video Calls</button>
+                <button class="btn btn-success" onclick="testVoiceCalls()">Test Voice Calls</button>
+            </div>
+            <div id="collaboration-log" class="log-container"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>📊 Database Tables Status</h3>
+            <div id="tables-status">
+                <div class="status info">Click "Check Collaboration Tables" to see table status</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Initialize Supabase client
+        const supabaseUrl = "https://nhuxwgmafdjchljvqlna.supabase.co";
+        const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5odXh3Z21hZmRqY2hsanZxbG5hIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM0MDI5MDMsImV4cCI6MjA2ODk3ODkwM30.snzV6ynuEOY2HETjoxzKyfMzSl_pE9UW6jIDydsoSe4";
+        
+        const supabase = createClient(supabaseUrl, supabaseKey);
+
+        function addLog(containerId, message, type = 'info') {
+            const container = document.getElementById(containerId);
+            const logEntry = document.createElement('div');
+            logEntry.className = `log-entry ${type}`;
+            logEntry.innerHTML = `[${new Date().toLocaleTimeString()}] ${message}`;
+            container.appendChild(logEntry);
+            container.scrollTop = container.scrollHeight;
+        }
+
+        async function testDatabaseConnection() {
+            addLog('db-log', '🔗 Testing database connection...', 'info');
+            
+            try {
+                // Test basic connection
+                const { data, error } = await supabase.from('profiles').select('count').limit(1);
+                
+                if (error) {
+                    addLog('db-log', `❌ Database connection failed: ${error.message}`, 'error');
+                    return;
+                }
+                
+                addLog('db-log', '✅ Database connection successful!', 'success');
+                addLog('db-log', '📊 Supabase client initialized correctly', 'info');
+                
+            } catch (error) {
+                addLog('db-log', `❌ Connection error: ${error.message}`, 'error');
+            }
+        }
+
+        async function checkTables() {
+            addLog('db-log', '🔍 Checking collaboration tables...', 'info');
+            
+            const tables = [
+                'messages',
+                'user_presence', 
+                'study_groups',
+                'study_group_members',
+                'help_requests',
+                'help_request_responses',
+                'notifications',
+                'video_calls',
+                'voice_calls',
+                'shared_resources'
+            ];
+
+            const tableStatus = document.getElementById('tables-status');
+            let statusHtml = '<table class="table-test"><tr><th>Table</th><th>Status</th><th>Details</th></tr>';
+
+            for (const table of tables) {
+                try {
+                    const { data, error } = await supabase.from(table).select('count').limit(1);
+                    
+                    if (error) {
+                        statusHtml += `<tr><td>${table}</td><td>❌ Missing</td><td>${error.message}</td></tr>`;
+                        addLog('db-log', `❌ Table ${table}: ${error.message}`, 'error');
+                    } else {
+                        statusHtml += `<tr><td>${table}</td><td>✅ Exists</td><td>Accessible</td></tr>`;
+                        addLog('db-log', `✅ Table ${table}: Exists and accessible`, 'success');
+                    }
+                } catch (error) {
+                    statusHtml += `<tr><td>${table}</td><td>❌ Error</td><td>${error.message}</td></tr>`;
+                    addLog('db-log', `❌ Table ${table}: ${error.message}`, 'error');
+                }
+            }
+
+            statusHtml += '</table>';
+            tableStatus.innerHTML = statusHtml;
+        }
+
+        async function testRealtimeFeatures() {
+            addLog('db-log', '🔗 Testing real-time features...', 'info');
+            
+            try {
+                // Test real-time subscription
+                const channel = supabase.channel('test-channel');
+                
+                channel
+                    .on('postgres_changes', { event: '*', schema: 'public', table: 'messages' }, (payload) => {
+                        addLog('db-log', `📨 Real-time message received: ${JSON.stringify(payload)}`, 'success');
+                    })
+                    .subscribe((status) => {
+                        addLog('db-log', `🔗 Real-time subscription status: ${status}`, 'info');
+                    });
+
+                addLog('db-log', '✅ Real-time subscription created successfully', 'success');
+                
+                // Clean up after 5 seconds
+                setTimeout(() => {
+                    channel.unsubscribe();
+                    addLog('db-log', '🔗 Real-time subscription cleaned up', 'info');
+                }, 5000);
+                
+            } catch (error) {
+                addLog('db-log', `❌ Real-time test failed: ${error.message}`, 'error');
+            }
+        }
+
+        async function testMessaging() {
+            addLog('messaging-log', '📨 Testing messaging functionality...', 'info');
+            
+            try {
+                // Test message insertion
+                const testMessage = {
+                    content: 'Test message from collaboration test',
+                    sender_id: 'test-user',
+                    sender_name: 'Test User',
+                    conversation_id: 'test-conversation',
+                    created_at: new Date().toISOString()
+                };
+
+                const { data, error } = await supabase
+                    .from('messages')
+                    .insert([testMessage])
+                    .select();
+
+                if (error) {
+                    addLog('messaging-log', `❌ Message insertion failed: ${error.message}`, 'error');
+                    return;
+                }
+
+                addLog('messaging-log', '✅ Test message inserted successfully', 'success');
+                addLog('messaging-log', `📝 Message ID: ${data[0].id}`, 'info');
+
+                // Clean up test message
+                await supabase
+                    .from('messages')
+                    .delete()
+                    .eq('id', data[0].id);
+
+                addLog('messaging-log', '🧹 Test message cleaned up', 'info');
+                
+            } catch (error) {
+                addLog('messaging-log', `❌ Messaging test failed: ${error.message}`, 'error');
+            }
+        }
+
+        async function testPresence() {
+            addLog('messaging-log', '👤 Testing presence functionality...', 'info');
+            
+            try {
+                const testPresence = {
+                    user_id: 'test-user',
+                    user_name: 'Test User',
+                    status: 'online',
+                    last_seen: new Date().toISOString()
+                };
+
+                const { data, error } = await supabase
+                    .from('user_presence')
+                    .upsert([testPresence])
+                    .select();
+
+                if (error) {
+                    addLog('messaging-log', `❌ Presence update failed: ${error.message}`, 'error');
+                    return;
+                }
+
+                addLog('messaging-log', '✅ Presence updated successfully', 'success');
+                addLog('messaging-log', `👤 User status: ${data[0].status}`, 'info');
+                
+            } catch (error) {
+                addLog('messaging-log', `❌ Presence test failed: ${error.message}`, 'error');
+            }
+        }
+
+        async function testStudyGroups() {
+            addLog('messaging-log', '👥 Testing study groups functionality...', 'info');
+            
+            try {
+                const testGroup = {
+                    name: 'Test Study Group',
+                    description: 'Test group for collaboration testing',
+                    subject: 'Testing',
+                    max_members: 5,
+                    created_by: 'test-user'
+                };
+
+                const { data, error } = await supabase
+                    .from('study_groups')
+                    .insert([testGroup])
+                    .select();
+
+                if (error) {
+                    addLog('messaging-log', `❌ Study group creation failed: ${error.message}`, 'error');
+                    return;
+                }
+
+                addLog('messaging-log', '✅ Study group created successfully', 'success');
+                addLog('messaging-log', `👥 Group ID: ${data[0].id}`, 'info');
+
+                // Clean up test group
+                await supabase
+                    .from('study_groups')
+                    .delete()
+                    .eq('id', data[0].id);
+
+                addLog('messaging-log', '🧹 Test group cleaned up', 'info');
+                
+            } catch (error) {
+                addLog('messaging-log', `❌ Study groups test failed: ${error.message}`, 'error');
+            }
+        }
+
+        async function testHelpRequests() {
+            addLog('collaboration-log', '🆘 Testing help requests functionality...', 'info');
+            
+            try {
+                const testRequest = {
+                    title: 'Test Help Request',
+                    description: 'This is a test help request for collaboration testing',
+                    subject: 'Testing',
+                    urgency: 'medium',
+                    created_by: 'test-user'
+                };
+
+                const { data, error } = await supabase
+                    .from('help_requests')
+                    .insert([testRequest])
+                    .select();
+
+                if (error) {
+                    addLog('collaboration-log', `❌ Help request creation failed: ${error.message}`, 'error');
+                    return;
+                }
+
+                addLog('collaboration-log', '✅ Help request created successfully', 'success');
+                addLog('collaboration-log', `🆘 Request ID: ${data[0].id}`, 'info');
+
+                // Clean up test request
+                await supabase
+                    .from('help_requests')
+                    .delete()
+                    .eq('id', data[0].id);
+
+                addLog('collaboration-log', '🧹 Test request cleaned up', 'info');
+                
+            } catch (error) {
+                addLog('collaboration-log', `❌ Help requests test failed: ${error.message}`, 'error');
+            }
+        }
+
+        async function testVideoCalls() {
+            addLog('collaboration-log', '📹 Testing video calls functionality...', 'info');
+            
+            try {
+                const testCall = {
+                    room_id: 'test-room-' + Date.now(),
+                    title: 'Test Video Call',
+                    host_id: 'test-user'
+                };
+
+                const { data, error } = await supabase
+                    .from('video_calls')
+                    .insert([testCall])
+                    .select();
+
+                if (error) {
+                    addLog('collaboration-log', `❌ Video call creation failed: ${error.message}`, 'error');
+                    return;
+                }
+
+                addLog('collaboration-log', '✅ Video call created successfully', 'success');
+                addLog('collaboration-log', `📹 Call ID: ${data[0].id}`, 'info');
+
+                // Clean up test call
+                await supabase
+                    .from('video_calls')
+                    .delete()
+                    .eq('id', data[0].id);
+
+                addLog('collaboration-log', '🧹 Test call cleaned up', 'info');
+                
+            } catch (error) {
+                addLog('collaboration-log', `❌ Video calls test failed: ${error.message}`, 'error');
+            }
+        }
+
+        async function testVoiceCalls() {
+            addLog('collaboration-log', '📞 Testing voice calls functionality...', 'info');
+            
+            try {
+                const testCall = {
+                    caller_id: 'test-user',
+                    receiver_id: 'test-receiver',
+                    status: 'ringing'
+                };
+
+                const { data, error } = await supabase
+                    .from('voice_calls')
+                    .insert([testCall])
+                    .select();
+
+                if (error) {
+                    addLog('collaboration-log', `❌ Voice call creation failed: ${error.message}`, 'error');
+                    return;
+                }
+
+                addLog('collaboration-log', '✅ Voice call created successfully', 'success');
+                addLog('collaboration-log', `📞 Call ID: ${data[0].id}`, 'info');
+
+                // Clean up test call
+                await supabase
+                    .from('voice_calls')
+                    .delete()
+                    .eq('id', data[0].id);
+
+                addLog('collaboration-log', '🧹 Test call cleaned up', 'info');
+                
+            } catch (error) {
+                addLog('collaboration-log', `❌ Voice calls test failed: ${error.message}`, 'error');
+            }
+        }
+
+        // Auto-run database connection test on page load
+        window.addEventListener('load', () => {
+            addLog('db-log', '🚀 Collaboration Database Test initialized', 'info');
+            testDatabaseConnection();
+        });
+    </script>
+</body>
+</html> 

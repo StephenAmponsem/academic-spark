@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Course Functionality Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-section {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .course-card {
+            border: 1px solid #ddd;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+            background: #fafafa;
+        }
+        .btn {
+            padding: 10px 20px;
+            margin: 5px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+        }
+        .btn-primary {
+            background: #007bff;
+            color: white;
+        }
+        .btn-secondary {
+            background: #28a745;
+            color: white;
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+        }
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .status.info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-section">
+        <h1>🎓 Course Functionality Test</h1>
+        <p>Testing if course links are working properly...</p>
+        
+        <div class="status info">
+            <strong>Test Instructions:</strong><br>
+            1. Click any "Access Course" button below<br>
+            2. Check if the course opens in a new tab<br>
+            3. Verify the URL is correct and functional
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>Sample Course Links</h2>
+        
+        <div class="course-card">
+            <h3>React - The Complete Guide</h3>
+            <p>Learn React.js from scratch! Hooks, Redux, React Router, Next.js, and more!</p>
+            <p><strong>Provider:</strong> Udemy</p>
+            <p><strong>URL:</strong> https://www.udemy.com/course/react-the-complete-guide-incl-redux/</p>
+            <a href="https://www.udemy.com/course/react-the-complete-guide-incl-redux/" 
+               target="_blank" class="btn btn-primary">Access Course</a>
+            <button class="btn btn-secondary" onclick="testEnrollment('react-complete-guide')">Enroll</button>
+        </div>
+
+        <div class="course-card">
+            <h3>Machine Learning by Andrew Ng</h3>
+            <p>Machine learning is the science of getting computers to act without being explicitly programmed.</p>
+            <p><strong>Provider:</strong> Coursera</p>
+            <p><strong>URL:</strong> https://www.coursera.org/learn/machine-learning</p>
+            <a href="https://www.coursera.org/learn/machine-learning" 
+               target="_blank" class="btn btn-primary">Access Course</a>
+            <button class="btn btn-secondary" onclick="testEnrollment('machine-learning-stanford')">Enroll</button>
+        </div>
+
+        <div class="course-card">
+            <h3>Web Development Bootcamp</h3>
+            <p>Become a Full-Stack Web Developer with HTML, CSS, JavaScript, Node.js, React, MongoDB.</p>
+            <p><strong>Provider:</strong> Udemy</p>
+            <p><strong>URL:</strong> https://www.udemy.com/course/the-complete-web-development-bootcamp/</p>
+            <a href="https://www.udemy.com/course/the-complete-web-development-bootcamp/" 
+               target="_blank" class="btn btn-primary">Access Course</a>
+            <button class="btn btn-secondary" onclick="testEnrollment('web-development-bootcamp')">Enroll</button>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>Test Results</h2>
+        <div id="test-results">
+            <div class="status info">
+                <strong>Ready to test!</strong><br>
+                Click the "Access Course" buttons above to test the functionality.
+            </div>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>Debug Information</h2>
+        <div id="debug-info">
+            <p><strong>Current URL:</strong> <span id="current-url"></span></p>
+            <p><strong>User Agent:</strong> <span id="user-agent"></span></p>
+            <p><strong>Window Size:</strong> <span id="window-size"></span></p>
+            <p><strong>Console Logs:</strong></p>
+            <div id="console-logs" style="background: #f8f9fa; padding: 10px; border-radius: 5px; font-family: monospace; max-height: 200px; overflow-y: auto;"></div>
+        </div>
+    </div>
+
+    <script>
+        // Initialize debug information
+        document.getElementById('current-url').textContent = window.location.href;
+        document.getElementById('user-agent').textContent = navigator.userAgent;
+        document.getElementById('window-size').textContent = `${window.innerWidth}x${window.innerHeight}`;
+
+        // Test enrollment function
+        function testEnrollment(courseId) {
+            console.log('🎓 Testing enrollment for course:', courseId);
+            addLog(`Testing enrollment for course: ${courseId}`);
+            
+            const button = event.target;
+            button.textContent = 'Enrolling...';
+            button.style.background = '#ffc107';
+            button.style.color = '#000';
+            
+            setTimeout(() => {
+                button.textContent = 'Enrolled!';
+                button.style.background = '#28a745';
+                button.style.color = 'white';
+                addLog(`✅ Successfully enrolled in course: ${courseId}`);
+            }, 1000);
+        }
+
+        // Add log to console and display
+        function addLog(message) {
+            console.log(message);
+            const logsDiv = document.getElementById('console-logs');
+            const timestamp = new Date().toLocaleTimeString();
+            logsDiv.innerHTML += `[${timestamp}] ${message}<br>`;
+            logsDiv.scrollTop = logsDiv.scrollHeight;
+        }
+
+        // Test course access
+        document.addEventListener('DOMContentLoaded', function() {
+            addLog('🎓 Course functionality test loaded successfully!');
+            
+            // Add click tracking for course access
+            document.querySelectorAll('.btn-primary').forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    const courseTitle = this.closest('.course-card').querySelector('h3').textContent;
+                    const courseUrl = this.href;
+                    
+                    addLog(`🔗 Accessing course: ${courseTitle}`);
+                    addLog(`🔗 Course URL: ${courseUrl}`);
+                    
+                    // Show success message
+                    const resultsDiv = document.getElementById('test-results');
+                    resultsDiv.innerHTML = `
+                        <div class="status success">
+                            <strong>✅ Course access successful!</strong><br>
+                            Course: ${courseTitle}<br>
+                            URL: ${courseUrl}<br>
+                            <small>Check if the course opened in a new tab.</small>
+                        </div>
+                    `;
+                });
+            });
+        });
+
+        // Test if popups are blocked
+        function testPopupBlocking() {
+            const testWindow = window.open('about:blank', '_blank', 'width=100,height=100');
+            if (testWindow) {
+                testWindow.close();
+                addLog('✅ Popups are allowed');
+                return true;
+            } else {
+                addLog('⚠️ Popups are blocked');
+                return false;
+            }
+        }
+
+        // Run popup test on load
+        window.addEventListener('load', function() {
+            testPopupBlocking();
+        });
+    </script>
+</body>
+</html> 

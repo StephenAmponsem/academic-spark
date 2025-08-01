@@ -63,7 +63,7 @@ export const ThemeProvider = ({ children }: ThemeProviderProps) => {
 
     // Listen for system theme changes
     const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-    const handleChange = () => {
+    const handleChange = (event: MediaQueryListEvent) => {
       if (theme === 'system') {
         const newResolvedTheme = getResolvedTheme();
         applyTheme(newResolvedTheme);
@@ -72,7 +72,7 @@ export const ThemeProvider = ({ children }: ThemeProviderProps) => {
 
     mediaQuery.addEventListener('change', handleChange);
     return () => mediaQuery.removeEventListener('change', handleChange);
-  }, [theme]);
+  }, [theme]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const value = {
     theme,
