@@ -29,15 +29,38 @@ export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_ANON_KEY, 
   },
 });
 
-// Add a listener to track session changes
+// Add a listener to track session changes with error handling
 supabase.auth.onAuthStateChange((event, session) => {
   console.log('🔐 Supabase Auth State Change:', event, session ? 'Session exists' : 'No session');
   
-  // Log session details for debugging
-  if (session) {
-    console.log('🔐 Session user:', session.user?.email);
-    console.log('🔐 Session expires at:', new Date(session.expires_at! * 1000).toLocaleString());
-    console.log('🔐 Session provider:', session.user?.app_metadata?.provider);
+  try {
+    // Log session details for debugging
+    if (session) {
+      console.log('🔐 Session user:', session.user?.email);
+      console.log('🔐 Session expires at:', new Date(session.expires_at! * 1000).toLocaleString());
+      console.log('🔐 Session provider:', session.user?.app_metadata?.provider);
+      
+      // Check if session is about to expire (within 5 minutes)
+      const expiresAt = new Date(session.expires_at! * 1000);
+      const now = new Date();
+      const fiveMinutes = 5 * 60 * 1000; // 5 minutes in milliseconds
+      
+      if (expiresAt.getTime() - now.getTime() < fiveMinutes) {
+        console.warn('🔐 Session expires soon, triggering refresh...');
+        supabase.auth.refreshSession();
+      }
+    }
+    
+    // Handle specific auth events
+    if (event === 'TOKEN_REFRESHED') {
+      console.log('🔐 Token refreshed successfully');
+    } else if (event === 'SIGNED_OUT') {
+      console.log('🔐 User signed out');
+      // Clear any cached data
+      localStorage.removeItem('educonnect-user-preferences');
+    }
+  } catch (error) {
+    console.error('🔐 Error in auth state change handler:', error);
   }
 });
 

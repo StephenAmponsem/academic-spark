@@ -1,6 +1,7 @@
 import { useState, useEffect, createContext, useContext } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
+import { handleError, AppError } from '@/lib/errorHandler';
 
 interface AuthContextType {
   user: User | null;
@@ -19,10 +20,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [role, setRole] = useState<string | null>(null);
 
   useEffect(() => {
-    // Set a shorter timeout for faster loading
+    // Set a much shorter timeout for faster loading
     const loadingTimeout = setTimeout(() => {
       setLoading(false);
-    }, 500); // Reduced from 1000ms to 500ms
+    }, 200); // Reduced from 500ms to 200ms for faster UI
 
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
@@ -46,18 +47,44 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           setUser(session?.user ?? null);
           
           if (session?.user) {
-            // Fetch user role from profiles
+            // Fetch user role from profiles with auto-creation fallback
             try {
-              const { data: profile } = await supabase
+              const { data: profile, error: profileError } = await supabase
                 .from('profiles')
-                .select('role')
+                .select('role, full_name')
                 .eq('id', session.user.id)
                 .single();
-              setRole(profile?.role || null);
-              console.log('🔐 User role set:', profile?.role);
+              
+              if (profileError && profileError.code === 'PGRST116') {
+                // Profile doesn't exist, create it
+                console.log('🔐 Profile not found, creating new profile...');
+                const { data: newProfile, error: createError } = await supabase
+                  .from('profiles')
+                  .insert({
+                    id: session.user.id,
+                    full_name: session.user.user_metadata?.full_name || session.user.email?.split('@')[0] || 'User',
+                    role: 'student' // Default role
+                  })
+                  .select('role')
+                  .single();
+                
+                if (createError) {
+                  handleError(createError, 'auth', false);
+                  setRole('student'); // Fallback to student role
+                } else {
+                  setRole(newProfile?.role || 'student');
+                  console.log('🔐 New profile created with role:', newProfile?.role);
+                }
+              } else if (profileError) {
+                handleError(profileError, 'auth', false);
+                setRole('student'); // Fallback to student role
+              } else {
+                setRole(profile?.role || 'student');
+                console.log('🔐 User role set:', profile?.role);
+              }
             } catch (error) {
-              console.warn('🔐 Could not fetch user role:', error);
-              setRole(null);
+              handleError(error as Error, 'auth', false);
+              setRole('student'); // Fallback to student role
             }
           } else {
             setRole(null);
@@ -91,18 +118,44 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setUser(session?.user ?? null);
       
       if (session?.user) {
-        // Fetch user role from profiles
+        // Fetch user role from profiles with auto-creation fallback
         try {
-          const { data: profile } = await supabase
+          const { data: profile, error: profileError } = await supabase
             .from('profiles')
-            .select('role')
+            .select('role, full_name')
             .eq('id', session.user.id)
             .single();
-          setRole(profile?.role || null);
-          console.log('🔐 User role set from existing session:', profile?.role);
+          
+          if (profileError && profileError.code === 'PGRST116') {
+            // Profile doesn't exist, create it
+            console.log('🔐 Profile not found in existing session, creating new profile...');
+            const { data: newProfile, error: createError } = await supabase
+              .from('profiles')
+              .insert({
+                id: session.user.id,
+                full_name: session.user.user_metadata?.full_name || session.user.email?.split('@')[0] || 'User',
+                role: 'student' // Default role
+              })
+              .select('role')
+              .single();
+            
+            if (createError) {
+              handleError(createError, 'auth', false);
+              setRole('student'); // Fallback to student role
+            } else {
+              setRole(newProfile?.role || 'student');
+              console.log('🔐 New profile created from existing session with role:', newProfile?.role);
+            }
+          } else if (profileError) {
+            handleError(profileError, 'auth', false);
+            setRole('student'); // Fallback to student role
+          } else {
+            setRole(profile?.role || 'student');
+            console.log('🔐 User role set from existing session:', profile?.role);
+          }
         } catch (error) {
-          console.warn('🔐 Could not fetch user role from existing session:', error);
-          setRole(null);
+          handleError(error as Error, 'auth', false);
+          setRole('student'); // Fallback to student role
         }
       } else {
         setRole(null);
@@ -119,6 +172,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       subscription.unsubscribe();
     };
   }, []);
+
+  const updateUserRole = async (newRole: string) => {
+    if (!user) return;
+    
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({ role: newRole })
+        .eq('id', user.id);
+      
+      if (error) {
+        handleError(error, 'auth', false);
+      } else {
+        setRole(newRole);
+        console.log('🔐 User role updated to:', newRole);
+      }
+    } catch (error) {
+      handleError(error as Error, 'auth', false);
+    }
+  };
 
   const signOut = async () => {
     try {
@@ -155,6 +228,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     loading,
     signOut,
     role,
+    updateUserRole,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

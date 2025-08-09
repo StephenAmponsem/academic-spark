@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import useAuth from "@/hooks/useAuth";
 import Header from "@/components/Header";
@@ -6,41 +6,46 @@ import HeroSection from "@/components/HeroSection";
 import FeaturesSection from "@/components/FeaturesSection";
 import CTASection from "@/components/CTASection";
 import Footer from "@/components/Footer";
+import { LoadingSpinner } from "@/components/ui/loading-states";
+import { motion } from "framer-motion";
 
 const Index = () => {
   const { user, loading } = useAuth();
   const navigate = useNavigate();
-  const [forceRender, setForceRender] = useState(false);
+  const [showContent, setShowContent] = useState(false);
 
-  // Force render after 2 seconds to prevent infinite loading
+  // Show content immediately, don't wait for auth
   useEffect(() => {
+    // Show content after a very short delay for smooth loading
     const timer = setTimeout(() => {
-      setForceRender(true);
-    }, 2000);
+      setShowContent(true);
+    }, 100);
 
     return () => clearTimeout(timer);
   }, []);
 
-  // Show loading state while checking authentication, but with a fallback
-  if (loading && !forceRender) {
+  // Only show loading for a very short time on initial page load
+  if (!showContent) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Loading...</p>
-        </div>
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-purple-50">
+        <LoadingSpinner size="lg" variant="gradient" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <motion.div 
+      className="min-h-screen bg-background"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.3 }}
+    >
       <Header />
       <HeroSection />
       <FeaturesSection />
       <CTASection />
       <Footer />
-    </div>
+    </motion.div>
   );
 };
 
