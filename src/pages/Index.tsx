@@ -16,12 +16,8 @@ const Index = () => {
 
   // Show content immediately, don't wait for auth
   useEffect(() => {
-    // Show content after a very short delay for smooth loading
-    const timer = setTimeout(() => {
-      setShowContent(true);
-    }, 100);
-
-    return () => clearTimeout(timer);
+    // Show content immediately for better performance
+    setShowContent(true);
   }, []);
 
   // Only show loading for a very short time on initial page load

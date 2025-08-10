@@ -22,20 +22,62 @@ export default function Auth() {
   const [selectedRole, setSelectedRole] = useState<'student' | 'instructor' | null>(null);
   const [showRoleSelection, setShowRoleSelection] = useState(false);
   const [authStep, setAuthStep] = useState<'role' | 'auth'>('role');
+  const [loadingTimeout, setLoadingTimeout] = useState<NodeJS.Timeout | null>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
 
+  // Clear loading timeout on unmount
   useEffect(() => {
-    // Quick auth check with immediate execution
+    return () => {
+      if (loadingTimeout) {
+        clearTimeout(loadingTimeout);
+      }
+    };
+  }, [loadingTimeout]);
+
+  // Set loading with timeout protection
+  const setLoadingWithTimeout = (loading: boolean, timeoutMs: number = 10000) => {
+    setIsLoading(loading);
+    
+    if (loading && timeoutMs > 0) {
+      // Clear existing timeout
+      if (loadingTimeout) {
+        clearTimeout(loadingTimeout);
+      }
+      
+      // Set new timeout to prevent infinite loading
+      const timeout = setTimeout(() => {
+        if (isLoading) {
+          console.warn('🔐 Authentication timeout, resetting loading state');
+          setIsLoading(false);
+          toast({
+            title: "Authentication Timeout",
+            description: "The authentication process took too long. Please try again.",
+            variant: "destructive"
+          });
+        }
+      }, timeoutMs);
+      
+      setLoadingTimeout(timeout);
+    } else if (!loading && loadingTimeout) {
+      // Clear timeout when loading is set to false
+      clearTimeout(loadingTimeout);
+      setLoadingTimeout(null);
+    }
+  };
+
+  useEffect(() => {
+    // Simplified auth check - only check if user is already authenticated
     const checkAuth = async () => {
       try {
         const { data: { session } } = await supabase.auth.getSession();
-        if (session) {
+        if (session?.user) {
           // Immediate redirect for better UX
           navigate('/', { replace: true });
         }
       } catch (error) {
         // Ignore auth check errors for faster loading
+        console.warn('Auth check failed:', error);
       }
     };
     
@@ -55,7 +97,7 @@ export default function Auth() {
       return;
     }
 
-    setIsLoading(true);
+    setLoadingWithTimeout(true);
 
     try {
       const redirectUrl = `${window.location.origin}/`;
@@ -74,6 +116,7 @@ export default function Auth() {
 
       if (error) {
         handleError(error, 'auth');
+        setLoadingWithTimeout(false);
       } else if (authData.user) {
         // Create profile with selected role immediately
         try {
@@ -92,17 +135,19 @@ export default function Auth() {
           "Account created successfully!",
           `Welcome to EDUConnect as a ${selectedRole}! Check your email for verification.`
         );
+        
+        // Keep loading state for email verification flow
+        // Don't set isLoading to false here as we're waiting for email confirmation
       }
     } catch (error) {
       handleError(error as Error, 'auth');
-    } finally {
-      setIsLoading(false);
+      setLoadingWithTimeout(false);
     }
   };
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
+    setLoadingWithTimeout(true);
 
     try {
       const { error } = await supabase.auth.signInWithPassword({
@@ -120,7 +165,7 @@ export default function Auth() {
     } catch (error) {
       handleError(error as Error, 'auth');
     } finally {
-      setIsLoading(false);
+      setLoadingWithTimeout(false);
     }
   };
 
@@ -135,7 +180,7 @@ export default function Auth() {
     }
 
     try {
-      setIsLoading(true);
+      setLoadingWithTimeout(true);
       const { error } = await supabase.auth.signInWithOAuth({
         provider,
         options: {
@@ -150,12 +195,23 @@ export default function Auth() {
 
       if (error) {
         handleError(error, 'auth');
-        setIsLoading(false);
+        setLoadingWithTimeout(false);
+      } else {
+        // For OAuth, we expect a redirect, so keep loading state
+        // The loading will be cleared when the user returns from OAuth
+        console.log(`🔐 OAuth ${provider} initiated, waiting for redirect...`);
+        
+        // Add a timeout to prevent infinite loading in case redirect fails
+        setTimeout(() => {
+          if (isLoading) {
+            console.warn('🔐 OAuth redirect timeout, resetting loading state');
+            setLoadingWithTimeout(false);
+          }
+        }, 10000); // 10 second timeout
       }
-      // Don't set loading to false here as page will redirect
     } catch (error) {
       handleError(error as Error, 'auth');
-      setIsLoading(false);
+      setLoadingWithTimeout(false);
     }
   };
 

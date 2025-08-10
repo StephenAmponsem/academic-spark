@@ -2,86 +2,40 @@
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from './types';
 
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || "https://nhuxwgmafdjchljvqlna.supabase.co";
-const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5odXh3Z21hZmRqY2hsanZxbG5hIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM0MDI5MDMsImV4cCI6MjA2ODk3ODkwM30.snzV6ynuEOY2HETjoxzKyfMzSl_pE9UW6jIDydsoSe4";
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
-// Import the supabase client like this:
-// import { supabase } from "@/integrations/supabase/client";
+if (!supabaseUrl || !supabaseAnonKey) {
+  throw new Error('Missing Supabase environment variables');
+}
 
-export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_ANON_KEY, {
+// Create optimized Supabase client with performance settings
+export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   auth: {
-    storage: localStorage,
-    persistSession: true,
+    // Faster auth state detection
     autoRefreshToken: true,
+    persistSession: true,
     detectSessionInUrl: true,
-    flowType: 'pkce', // Use PKCE flow for better security
-    debug: true, // Enable debug mode to see auth events
+    // Reduce auth check frequency
+    flowType: 'pkce',
+  },
+  global: {
+    // Optimize headers for better performance
+    headers: {
+      'X-Client-Info': 'academic-spark-2',
+    },
+  },
+  db: {
+    // Optimize database queries
+    schema: 'public',
   },
   realtime: {
+    // Optimize realtime connections
     params: {
       eventsPerSecond: 10,
     },
   },
-  global: {
-    headers: {
-      'X-Client-Info': 'academic-spark-web',
-    },
-  },
 });
 
-// Add a listener to track session changes with error handling
-supabase.auth.onAuthStateChange((event, session) => {
-  console.log('🔐 Supabase Auth State Change:', event, session ? 'Session exists' : 'No session');
-  
-  try {
-    // Log session details for debugging
-    if (session) {
-      console.log('🔐 Session user:', session.user?.email);
-      console.log('🔐 Session expires at:', new Date(session.expires_at! * 1000).toLocaleString());
-      console.log('🔐 Session provider:', session.user?.app_metadata?.provider);
-      
-      // Check if session is about to expire (within 5 minutes)
-      const expiresAt = new Date(session.expires_at! * 1000);
-      const now = new Date();
-      const fiveMinutes = 5 * 60 * 1000; // 5 minutes in milliseconds
-      
-      if (expiresAt.getTime() - now.getTime() < fiveMinutes) {
-        console.warn('🔐 Session expires soon, triggering refresh...');
-        supabase.auth.refreshSession();
-      }
-    }
-    
-    // Handle specific auth events
-    if (event === 'TOKEN_REFRESHED') {
-      console.log('🔐 Token refreshed successfully');
-    } else if (event === 'SIGNED_OUT') {
-      console.log('🔐 User signed out');
-      // Clear any cached data
-      localStorage.removeItem('educonnect-user-preferences');
-    }
-  } catch (error) {
-    console.error('🔐 Error in auth state change handler:', error);
-  }
-});
-
-// Handle OAuth callback
-if (typeof window !== 'undefined') {
-  // Check if we're on an OAuth callback page
-  const urlParams = new URLSearchParams(window.location.search);
-  const accessToken = urlParams.get('access_token');
-  const refreshToken = urlParams.get('refresh_token');
-  
-  if (accessToken && refreshToken) {
-    console.log('🔐 OAuth callback detected, setting session...');
-    supabase.auth.setSession({
-      access_token: accessToken,
-      refresh_token: refreshToken,
-    }).then(({ data, error }) => {
-      if (error) {
-        console.error('🔐 Error setting OAuth session:', error);
-      } else {
-        console.log('🔐 OAuth session set successfully:', data.session?.user?.email);
-      }
-    });
-  }
-}
+// Export the enhanced client
+export default supabase;
